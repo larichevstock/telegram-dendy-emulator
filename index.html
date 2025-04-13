@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Dendy Emulator для Telegram</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+        <style>
+            body, html {
+                height: 100%;
+                background-color: #1E1E1E;
+                color: white;
+                margin: 0;
+                padding: 0;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            body {
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                width: 100%;
+            }
+
+            .container {
+                width: 100%;
+                max-width: 800px;
+                padding: 10px;
+                box-sizing: border-box;
+                overflow-x: hidden;
+            }
+
+            #header {
+                text-align: center;
+                padding: 10px 0;
+                width: 100%;
+            }
+
+            #header h1 {
+                margin: 0 0 10px 0;
+                font-size: 28px;
+            }
+
+            #header p {
+                margin: 0;
+                font-size: 16px;
+                color: #bbb;
+            }
+
+            .logo {
+                width: 80px;
+                height: 80px;
+                margin-bottom: 10px;
+            }
+
+            #gameSelect {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 15px;
+                background-color: #2A2A2A;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                margin-bottom: 15px;
+                box-sizing: border-box;
+            }
+
+            #uploadBox {
+                width: 100%;
+                height: 120px;
+                border: 2px dashed #555;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 15px;
+                background-color: #333;
+                transition: all 0.3s;
+                cursor: pointer;
+                position: relative;
+                box-sizing: border-box;
+            }
+
+            #uploadBox:hover, #uploadBox[drag], #uploadBox:active {
+                border-color: #0088CC;
+                background-color: #383838;
+            }
+
+            #fileInput {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                opacity: 0;
+                cursor: pointer;
+                z-index: 10;
+            }
+
+            #uploadText {
+                font-size: 16px;
+                color: #aaa;
+                text-align: center;
+                padding: 0 15px;
+            }
+
+            #gameLibrary {
+                width: 100%;
+                margin-bottom: 15px;
+            }
+
+            .gameLibraryTitle {
+                font-size: 18px;
+                margin-bottom: 10px;
+                color: #ddd;
+                text-align: center;
+            }
+
+            #gamesList {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 10px;
+                width: 100%;
+            }
+
+            .gameCard {
+                background-color: #333;
+                border-radius: 8px;
+                padding: 10px;
+                cursor: pointer;
+                transition: all 0.2s;
+                text-align: center;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            .gameCard:hover, .gameCard:active {
+                background-color: #444;
+                transform: translateY(-2px);
+            }
+
+            .gameIcon {
+                width: 60px;
+                height: 60px;
+                margin-bottom: 5px;
+                border-radius: 4px;
+                background-color: #222;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 8px auto;
+                font-weight: bold;
+                color: #0088CC;
+            }
+
+            .gameTitle {
+                font-size: 14px;
+                color: #ddd;
+                word-break: break-word;
+            }
+
+            #display {
+                width: 100%;
+                height: calc(100vh - 160px);
+                max-height: 600px;
+                background-color: #000;
+                border-radius: 8px;
+                overflow: hidden;
+                position: relative;
+            }
+
+            #game {
+                width: 100%;
+                height: 100%;
+            }
+
+            select, button {
+                padding: 12px;
+                margin: 8px 0;
+                width: 100%;
+                max-width: 300px;
+                font-family: inherit;
+                font-size: 16px;
+                background-color: #0088CC;
+                color: white;
+                border-radius: 8px;
+                border: none;
+                cursor: pointer;
+                transition: all 0.2s;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+                touch-action: manipulation;
+            }
+
+            button:hover, button:active {
+                background-color: #0077B5;
+            }
+
+            select {
+                background-color: #333;
+                color: #ddd;
+            }
+
+            select:hover, select:active {
+                background-color: #444;
+            }
+
+            .hidden {
+                display: none !important;
+            }
+
+            /* Делаем кнопку Назад более прозрачной */
+            #backButton {
+                position: fixed;
+                top: 15px;
+                left: 15px;
+                background-color: rgba(0,0,0,0.3); /* Увеличили прозрачность */
+                color: white;
+                border: none;
+                border-radius: 50%;
+                width: 36px;
+                height: 36px;
+                padding: 0;
+                cursor: pointer;
+                z-index: 1002 !important; /* Поверх всего */
+                font-size: 22px;
+                font-weight: bold;
+                max-width: unset;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            }
+
+            #backButton:hover, #backButton:active {
+                background-color: rgba(0,0,0,0.5);
+            }
+            
+            /* Кнопка перезагрузки эмулятора */
+            #reloadEmulatorButton {
+                position: fixed;
+                top: 15px;
+                right: 15px;
+                background-color: rgba(0,0,0,0.3);
+                color: white;
+                border: none;
+                border-radius: 50%;
+                width: 36px;
+                height: 36px;
+                padding: 0;
+                cursor: pointer;
+                z-index: 1002 !important;
+                font-size: 20px;
+                font-weight: bold;
+                max-width: unset;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            }
+            
+            #reloadEmulatorButton:hover, #reloadEmulatorButton:active {
+                background-color: rgba(0,0,0,0.5);
+            }
+            
+            /* Стили для полноэкранного режима - важные правила для правильного отображения */
+            .fullscreen-mode #display {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                max-height: none !important;
+                z-index: 1000 !important;
+                border-radius: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: hidden !important;
+                background-color: #000 !important;
+            }
+
+            .fullscreen-mode #game {
+                width: 100% !important;
+                height: 100% !important;
+                position: relative !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                overflow: hidden !important;
+                background-color: #000 !important;
+            }
+
+            /* Особые правила для canvas элементов (создаваемых эмулятором) */
+            .fullscreen-mode #game canvas {
+                object-fit: contain !important;
+                max-width: 100% !important;
+                max-height: 100% !important;
+                width: auto !important;
+                height: auto !important;
+                position: absolute !important;
+                left: 50% !important;
+                top: 50% !important;
+                transform: translate(-50%, -50%) !important;
+                image-rendering: pixelated !important; /* Для пиксельных игр */
+                background-color: #000 !important;
+                -webkit-backface-visibility: hidden !important;
+                backface-visibility: hidden !important;
+            }
+
+            /* Стили для элементов управления */
+            .fullscreen-mode .ejs_virtualGamepad, 
+            .fullscreen-mode .ejs_virtualGamepad_button,
+            .fullscreen-mode .ejs_virtualGamepad_touchpad {
+                z-index: 1002 !important; /* Обеспечиваем, что элементы управления будут поверх игры */
+            }
+
+            /* Улучшенные стили для сообщения об ориентации экрана */
+            #orientationMessage {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0,0,0,0.9);
+                z-index: 2000; /* Повышенный z-index */
+                display: none;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                text-align: center;
+                padding: 20px;
+                box-sizing: border-box;
+                transition: opacity 0.3s ease;
+                -webkit-tap-highlight-color: transparent;
+                user-select: none;
+            }
+
+            /* Улучшенная кнопка "Начать играть" */
+            #startPlayButton {
+                background-color: #FF0000;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                padding: 15px 30px;
+                font-size: 20px;
+                font-weight: bold;
+                margin-bottom: 30px;
+                cursor: pointer;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                transition: transform 0.1s ease, background-color 0.2s ease;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            #startPlayButton:hover, #startPlayButton:active {
+                background-color: #D00000;
+                transform: translateY(2px);
+            }
+
+            /* Предотвращаем любое взаимодействие с документом при активном эмуляторе */
+            body.touch-disabled {
+                touch-action: none !important;
+                -ms-touch-action: none !important;
+                overflow: hidden !important;
+            }
+
+            /* Стили для состояния загрузки */
+            .loading-state {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0,0,0,0.8);
+                z-index: 2000;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                text-align: center;
+            }
+
+            .loading-state p {
+                margin-top: 20px;
+                font-size: 18px;
+                font-weight: bold;
+            }
+
+            .loading-spinner {
+                width: 50px;
+                height: 50px;
+                border: 5px solid rgba(255,255,255,0.3);
+                border-radius: 50%;
+                border-top-color: white;
+                animation: spin 1s ease-in-out infinite;
+            }
+
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+
+            /* Анимация загрузки для перезагрузки эмулятора */
+            .loading-indicator {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0,0,0,0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 2000;
+                display: none;
+            }
+
+            .loading-indicator::after {
+                content: "";
+                width: 50px;
+                height: 50px;
+                border: 5px solid #fff;
+                border-radius: 50%;
+                border-top-color: transparent;
+                animation: spin 1s linear infinite;
+            }
+
+            /* Стили для мобильных устройств */
+            @media (max-width: 768px) {
+                .container {
+                    padding: 8px;
+                }
+                
+                #header {
+                    padding-top: 10px; /* Уменьшаем отступ, так как кнопка теперь меньше */
+                }
+                
+                #header h1 {
+                    font-size: 24px;
+                }
+                
+                #header p {
+                    font-size: 14px;
+                }
+                
+                #gameSelect {
+                    padding: 12px;
+                }
+                
+                #uploadBox {
+                    height: 100px;
+                }
+                
+                #uploadText {
+                    font-size: 14px;
+                }
+                
+                #gamesList {
+                    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                    gap: 8px;
+                }
+                
+                .gameCard {
+                    padding: 8px;
+                }
+                
+                .gameIcon {
+                    width: 45px;
+                    height: 45px;
+                }
+                
+                .gameTitle {
+                    font-size: 12px;
+                }
+                
+                #display {
+                    height: calc(100vh - 120px);
+                }
+                
+                #backButton, #reloadEmulatorButton {
+                    width: 36px;
+                    height: 36px;
+                    font-size: 18px;
+                }
+            }
+            
+            /* Стили для маленьких мобильных устройств */
+            @media (max-width: 480px) {
+                #header h1 {
+                    font-size: 22px;
+                }
+                
+                #gamesList {
+                    grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+                    gap: 6px;
+                }
+                
+                .gameIcon {
+                    width: 40px;
+                    height: 40px;
+                }
+                
+                .gameTitle {
+                    font-size: 11px;
+                }
+                
+                #uploadBox {
+                    height: 90px;
+                }
+                
+                #uploadText {
+                    font-size: 13px;
+                }
+                
+                #display {
+                    height: calc(100vh - 100px);
+                }
+                
+                #backButton, #reloadEmulatorButton {
+                    width: 32px;
+                    height: 32px;
+                    font-size: 16px;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
+            <div id="header">
+                <h1>Dendy Emulator</h1>
+                <p>Играйте в классические игры прямо в Telegram</p>
+            </div>
+
+            <div id="gameSelect">
+                <div id="uploadBox">
+                    <input type="file" id="fileInput" accept=".nes,.fds,.unif,.unf">
+                    <div id="uploadText">
+                        <strong>Загрузите ROM-файл</strong><br>
+                        Перетащите файл или нажмите здесь
+                    </div>
+                </div>
+
+                <div id="gameLibrary">
+                    <div class="gameLibraryTitle">Выберите игру из библиотеки:</div>
+                    <div id="gamesList"></div>
+                </div>
+            </div>
+
+            <div id="display" class="hidden">
+                <div id="game"></div>
+            </div>
+        </div>
+        
+        <!-- Обновленный диалог ориентации без кнопки закрытия -->
+        <div id="orientationMessage">
+            <button id="startPlayButton">Начать играть</button>
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 2H7C5.9 2 5 2.9 5 4v16c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"></path>
+                <path d="M12 18h.01"></path>
+            </svg>
+            <h2 style="margin: 15px 0;">Для лучшего опыта</h2>
+            <p style="font-size: 16px; margin: 0 0 20px 0;">Поверните устройство в горизонтальное положение для более комфортной игры</p>
+        </div>
+
+        <!-- Состояние загрузки (для перезагрузки эмулятора) -->
+        <div id="loadingState" class="loading-state" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>Перезагрузка эмулятора...</p>
+        </div>
+        
+        <!-- Индикатор загрузки -->
+        <div id="loadingIndicator" class="loading-indicator"></div>
+
+        <!-- Кнопки управления -->
+        <button id="backButton">&#10229;</button>
+        <button id="reloadEmulatorButton">↻</button>
+        
+        <!-- Невидимая кнопка для отладки -->
+        <button id="forceStopButton" style="display: none; position: fixed; bottom: 10px; right: 10px; z-index: 1000; background-color: red;">Остановка</button>
+
+<script>
+            // Конфигурация
+            const enableDebug = false;
+            const enableThreads = false;
+            const defaultCore = "nes"; // NES/Dendy
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            // Элементы DOM
+            const fileInput = document.getElementById('fileInput');
+            const uploadBox = document.getElementById('uploadBox');
+            const gameSelect = document.getElementById('gameSelect');
+            const display = document.getElementById('display');
+            const backButton = document.getElementById('backButton');
+            const reloadEmulatorButton = document.getElementById('reloadEmulatorButton');
+            const gamesList = document.getElementById('gamesList');
+            const startPlayButton = document.getElementById('startPlayButton');
+            const orientationMessage = document.getElementById('orientationMessage');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const loadingState = document.getElementById('loadingState');
+            
+            // Обработка перетаскивания файлов
+            uploadBox.ondragover = (e) => {
+                e.preventDefault();
+                uploadBox.setAttribute("drag", true);
+            };
+            
+            uploadBox.ondragleave = () => {
+                uploadBox.removeAttribute("drag");
+            };
+            
+            uploadBox.ondrop = (e) => {
+                e.preventDefault();
+                uploadBox.removeAttribute("drag");
+                
+                if (e.dataTransfer.files.length > 0) {
+                    handleRomFile(e.dataTransfer.files[0]);
+                }
+            };
+            
+            // Обработка выбора файла
+            fileInput.onchange = () => {
+                if (fileInput.files.length > 0) {
+                    handleRomFile(fileInput.files[0]);
+                }
+            };
+            
+            // Кнопка возврата к выбору игр
+            backButton.onclick = () => {
+                // Остановка эмулятора перед возвратом в меню
+                stopEmulator();
+                
+                // Возврат к выбору игр
+                document.body.classList.remove('fullscreen-mode');
+                document.body.classList.remove('touch-disabled');
+                display.classList.add('hidden');
+                gameSelect.classList.remove('hidden');
+                backButton.style.display = 'none';
+                reloadEmulatorButton.style.display = 'none';
+                
+                // Сбрасываем переменные состояния
+                window.currentRomUrl = null;
+                window.currentGameName = null;
+                window.orientationShown = false;
+                window.isEmulatorActive = false;
+            };
+            
+            // Кнопка перезагрузки эмулятора
+            reloadEmulatorButton.onclick = () => {
+                loadingState.style.display = 'flex';
+                setTimeout(() => {
+                    reloadEmulator();
+                    setTimeout(() => {
+                        loadingState.style.display = 'none';
+                    }, 1500);
+                }, 500);
+            };
+            
+            // Функция для исправления масштабирования canvas после изменения ориентации
+            function fixCanvasScaling() {
+                const canvasElements = document.querySelectorAll('#game canvas');
+                canvasElements.forEach(canvas => {
+                    // Принудительно восстанавливаем правильные стили
+                    canvas.style.objectFit = 'contain';
+                    canvas.style.maxWidth = '100%';
+                    canvas.style.maxHeight = '100%';
+                    canvas.style.width = 'auto';
+                    canvas.style.height = 'auto';
+                    canvas.style.position = 'absolute';
+                    canvas.style.left = '50%';
+                    canvas.style.top = '50%';
+                    canvas.style.transform = 'translate(-50%, -50%)';
+                    canvas.style.backgroundColor = '#000';
+                    canvas.style.imageRendering = 'pixelated';
+                    
+                    // Принудительно обновляем размеры для предотвращения растягивания
+                    const ratio = canvas.width / canvas.height;
+                    const viewportWidth = window.innerWidth;
+                    const viewportHeight = window.innerHeight;
+                    
+                    if (viewportWidth / viewportHeight > ratio) {
+                        // Если экран шире, чем соотношение сторон игры
+                        canvas.style.height = '100%';
+                        canvas.style.width = 'auto';
+                    } else {
+                        // Если экран уже, чем соотношение сторон игры
+                        canvas.style.width = '100%';
+                        canvas.style.height = 'auto';
+                    }
+                });
+                
+                // Также обновляем контейнеры
+                const gameContainer = document.getElementById('game');
+                if (gameContainer) {
+                    gameContainer.style.width = '100%';
+                    gameContainer.style.height = '100%';
+                    gameContainer.style.display = 'flex';
+                    gameContainer.style.alignItems = 'center';
+                    gameContainer.style.justifyContent = 'center';
+                    gameContainer.style.overflow = 'hidden';
+                    gameContainer.style.backgroundColor = '#000';
+                }
+            }
+            
+            // Улучшенная функция включения полноэкранного режима
+            function enableFullscreen() {
+                document.body.classList.add('fullscreen-mode');
+                document.body.classList.add('touch-disabled');
+                
+                // Устанавливаем стили для полноэкранного режима
+                // Важно: используем содержимое на всю ширину и высоту, но без растягивания
+                display.style.position = 'fixed';
+                display.style.top = '0';
+                display.style.left = '0';
+                display.style.width = '100vw';
+                display.style.height = '100vh';
+                display.style.maxHeight = 'none';
+                display.style.zIndex = '1000';
+                display.style.borderRadius = '0';
+                display.style.overflow = 'hidden';
+                display.style.backgroundColor = '#000';
+                
+                // Настраиваем размеры и позиционирование игрового контейнера для правильного отображения
+                const gameContainer = document.getElementById('game');
+                if (gameContainer) {
+                    // Используем object-fit для предотвращения растягивания
+                    gameContainer.style.width = '100%';
+                    gameContainer.style.height = '100%';
+                    gameContainer.style.objectFit = 'contain';
+                    gameContainer.style.backgroundColor = '#000';
+                    gameContainer.style.display = 'flex';
+                    gameContainer.style.alignItems = 'center';
+                    gameContainer.style.justifyContent = 'center';
+                    gameContainer.style.overflow = 'hidden';
+                    
+                    // Ищем canvas элемент (создается эмулятором)
+                    setTimeout(() => {
+                        const canvasElements = gameContainer.querySelectorAll('canvas');
+                        canvasElements.forEach(canvas => {
+                            canvas.style.objectFit = 'contain';
+                            canvas.style.maxWidth = '100%';
+                            canvas.style.maxHeight = '100%';
+                            canvas.style.width = 'auto';
+                            canvas.style.height = 'auto';
+                            canvas.style.position = 'absolute';
+                            canvas.style.left = '50%';
+                            canvas.style.top = '50%';
+                            canvas.style.transform = 'translate(-50%, -50%)';
+                            canvas.style.backgroundColor = '#000';
+                            canvas.style.imageRendering = 'pixelated';
+                        });
+                    }, 1000); // Задержка, чтобы дать время эмулятору создать canvas
+                }
+                
+                // Запрашиваем полноэкранный режим браузера, если доступно
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.log("Ошибка: не удалось перейти в полноэкранный режим", err);
+                    });
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen();
+                } else if (document.documentElement.msRequestFullscreen) {
+                    document.documentElement.msRequestFullscreen();
+                }
+            }
+            
+            // Улучшенная обработка восстановления после блокировки экрана
+            function handleVisibilityChange() {
+                if (document.hidden) {
+                    // Если страница скрыта - явно ставим игру на паузу
+                    if (!display.classList.contains('hidden') && window.EJS_emulator) {
+                        console.log("Putting emulator to sleep");
+                        
+                        // Сохраняем текущее состояние с меткой времени
+                        window.emulatorLastState = {
+                            time: Date.now(),
+                            paused: true
+                        };
+                        
+                        // Явно приостанавливаем эмулятор и аудио
+                        if (typeof window.EJS_emulator.pause === 'function') {
+                            window.EJS_emulator.pause();
+                        }
+                        
+                        // Останавливаем все аудио
+                        const audioElements = document.querySelectorAll('audio');
+                        audioElements.forEach(audio => {
+                            audio.pause();
+                        });
+                        
+                        // Приостанавливаем аудиоконтекст
+                        if (window.EJS_emulator && window.EJS_emulator.audioContext) {
+                            if (window.EJS_emulator.audioContext.state === 'running') {
+                                window.EJS_emulator.audioContext.suspend();
+                            }
+                        }
+                    }
+                } else {
+                    // Когда страница снова видима
+                    if (!display.classList.contains('hidden') && window.EJS_emulator) {
+                        console.log("Waking up emulator");
+                        
+                        // Проверяем, не слишком ли долго была заблокирована страница
+                        const now = Date.now();
+                        const sleepTime = window.emulatorLastState ? (now - window.emulatorLastState.time) : 0;
+                        
+
+                        // Если страница была заблокирована более 5 минут, перезагружаем эмулятор
+                        if (sleepTime > 5 * 60 * 1000) {
+                            console.log("Device was asleep for too long, reloading emulator");
+                            loadingState.style.display = 'flex';
+                            setTimeout(() => {
+                                reloadEmulator();
+                                setTimeout(() => {
+                                    loadingState.style.display = 'none';
+                                }, 1500);
+                            }, 500);
+                            return;
+                        }
+                        
+                        // Восстанавливаем полноэкранный режим
+                        setTimeout(() => {
+                            enableFullscreen();
+                            
+                            // Исправляем масштабирование
+                            fixCanvasScaling();
+                            
+                            // Пытаемся возобновить эмулятор
+                            setTimeout(() => {
+                                resumeEmulator();
+                            }, 300);
+                        }, 300);
+                    }
+                }
+            }
+
+            // Улучшенная функция для возобновления работы эмулятора
+            function resumeEmulator() {
+                if (window.EJS_emulator) {
+                    try {
+                        console.log("Attempting to resume emulator");
+                        
+                        // Пытаемся восстановить аудиоконтекст
+                        if (window.EJS_emulator.audioContext && 
+                            window.EJS_emulator.audioContext.state === 'suspended') {
+                            window.EJS_emulator.audioContext.resume().catch(e => {
+                                console.error("Failed to resume audio context:", e);
+                            });
+                        }
+                        
+                        // Пытаемся возобновить работу эмулятора
+                        if (typeof window.EJS_emulator.resume === 'function') {
+                            window.EJS_emulator.resume();
+                        }
+                        
+                        // Пытаемся вернуть фокус на canvas
+                        const canvasElements = document.querySelectorAll('#game canvas');
+                        if (canvasElements.length > 0) {
+                            canvasElements[0].focus();
+                        }
+                        
+                        // Проверяем состояние через секунду
+                        setTimeout(() => {
+                            // Если эмулятор все еще не работает, пробуем еще раз или перезагружаем
+                            if (window.EJS_emulator && typeof window.EJS_emulator.isRunning === 'function') {
+                                const running = window.EJS_emulator.isRunning();
+                                if (!running) {
+                                    console.log("Emulator still not running, attempting reload");
+                                    reloadEmulator();
+                                }
+                            }
+                        }, 1000);
+                        
+                        return true;
+                    } catch (e) {
+                        console.error('Error resuming emulator:', e);
+                        // Если возобновление не удалось, перезагружаем эмулятор
+                        if (window.currentRomUrl && window.currentGameName) {
+                            console.log("Resume failed, reloading emulator");
+                            reloadEmulator();
+                        }
+                        return false;
+                    }
+                }
+                return false;
+            }
+// Функция для перезагрузки эмулятора (в случае зависания)
+            function reloadEmulator() {
+                if (window.currentRomUrl && window.currentGameName) {
+                    // Останавливаем текущий экземпляр
+                    stopEmulator();
+                    
+                    // Запускаем снова с текущим ROM
+                    setTimeout(() => {
+                        loadGame(window.currentRomUrl, window.currentGameName, defaultCore);
+                    }, 500);
+                }
+            }
+            
+            // Полная остановка и очистка эмулятора
+            function stopEmulator() {
+                // Останавливаем все аудиоконтексты
+                stopAllAudio();
+                
+                // Удаляем предыдущий экземпляр эмулятора
+                const gameContainer = document.getElementById('game');
+                while (gameContainer.firstChild) {
+                    gameContainer.removeChild(gameContainer.firstChild);
+                }
+                
+                // Удаляем скрипт эмулятора
+                const oldScript = document.getElementById('emulatorScript');
+                if (oldScript) {
+                    oldScript.remove();
+                }
+                
+                // Очищаем глобальные переменные эмулятора
+                window.EJS_player = null;
+                window.EJS_gameUrl = null;
+                window.EJS_core = null;
+                window.EJS_pathtodata = null;
+                window.EJS_startOnLoaded = null;
+                window.EJS_onGameStart = null;
+                
+                // Важно: останавливаем эмулятор если он существует
+                if (window.EJS_emulator) {
+                    try {
+                        if (typeof window.EJS_emulator.pause === 'function') {
+                            window.EJS_emulator.pause();
+                        }
+                        if (typeof window.EJS_emulator.stop === 'function') {
+                            window.EJS_emulator.stop();
+                        }
+                        if (typeof window.EJS_emulator.destroy === 'function') {
+                            window.EJS_emulator.destroy();
+                        }
+                        window.EJS_emulator = null;
+                    } catch (e) {
+                        console.error("Ошибка при остановке эмулятора:", e);
+                    }
+                }
+                
+                // Принудительно освобождаем память
+                if (window.gc) {
+                    window.gc();
+                }
+            }
+            
+            // Остановка всех звуков
+            function stopAllAudio() {
+                // Останавливаем все аудиоконтексты
+                try {
+                    // Поиск всех аудиоконтекстов на странице
+                    const audioElements = document.querySelectorAll('audio');
+                    audioElements.forEach(audio => {
+                        audio.pause();
+                        audio.currentTime = 0;
+                        audio.remove();
+                    });
+                    
+                    // Если эмулятор использует Web Audio API
+                    if (window.AudioContext || window.webkitAudioContext) {
+                        // Пробуем найти и остановить все аудиоконтексты
+                        if (window.EJS_emulator && window.EJS_emulator.audioContext) {
+                            try {
+                                window.EJS_emulator.audioContext.close();
+                            } catch (e) {
+                                console.error("Ошибка при закрытии аудиоконтекста:", e);
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error("Ошибка при остановке аудио:", e);
+                }
+            }
+            
+            // Обработка ROM-файла
+            function handleRomFile(file) {
+                const fileName = file.name;
+                const parts = fileName.split(".");
+                const extension = parts.pop().toLowerCase();
+                const gameName = parts.join(".");
+                
+                // Проверяем поддерживаемые форматы для Dendy/NES
+                if (["fds", "nes", "unif", "unf"].includes(extension)) {
+                    loadGame(file, gameName, defaultCore);
+                } else {
+                    alert("Этот формат файла не поддерживается. Пожалуйста, загрузите ROM в формате .nes, .fds, .unif или .unf");
+                }
+            }
+            
+            // Обновленная функция загрузки игры
+            function loadGame(romFile, gameName, core) {
+                // Останавливаем предыдущий экземпляр эмулятора если он есть
+                stopEmulator();
+                
+                // Сохраняем информацию о текущей игре для возможной перезагрузки
+                window.currentRomUrl = romFile;
+                window.currentGameName = gameName;
+                
+                // Сбрасываем флаг показа сообщения об ориентации
+                window.orientationShown = false;
+                window.isEmulatorActive = true;
+                
+                // Скрываем выбор игры и показываем эмулятор
+                gameSelect.classList.add('hidden');
+                display.classList.remove('hidden');
+                backButton.style.display = 'flex'; // Используем flex для центрирования иконки
+                reloadEmulatorButton.style.display = 'flex'; // Показываем кнопку перезагрузки
+                
+                // На мобильных устройствах автоматически включаем полноэкранный режим
+                if (isMobile) {
+                    enableFullscreen();
+                }
+                
+                // Конфигурируем эмулятор
+                window.EJS_player = "#game";
+                window.EJS_gameName = gameName;
+                window.EJS_biosUrl = "";
+                window.EJS_gameUrl = romFile; // Может быть как File, так и URL
+                window.EJS_core = core;
+                window.EJS_pathtodata = "data/";
+                window.EJS_startOnLoaded = true;
+                window.EJS_DEBUG_XX = enableDebug;
+                window.EJS_disableDatabases = true;
+                window.EJS_threads = enableThreads;
+                window.EJS_onGameStart = function() {
+                    // Можно добавить логику для Telegram
+                    if (window.Telegram && window.Telegram.WebApp) {
+                        window.Telegram.WebApp.expand();
+                    }
+                    
+                    // Устанавливаем стили для canvas после запуска
+                    setTimeout(() => {
+                        const canvasElements = document.querySelectorAll('#game canvas');
+                        canvasElements.forEach(canvas => {
+                            canvas.style.objectFit = 'contain';
+                            canvas.style.maxWidth = '100%';
+                            canvas.style.maxHeight = '100%';
+                            canvas.style.width = 'auto';
+                            canvas.style.height = 'auto';
+                            canvas.style.position = 'absolute';
+                            canvas.style.left = '50%';
+                            canvas.style.top = '50%';
+                            canvas.style.transform = 'translate(-50%, -50%)';
+                            canvas.style.backgroundColor = '#000';
+                            canvas.style.imageRendering = 'pixelated';
+                        });
+                    }, 1000);
+                    
+                    // Проверяем ориентацию при запуске игры
+                    checkOrientation();
+                };
+                
+                // Загружаем эмулятор
+                const script = document.createElement("script");
+                script.id = "emulatorScript";
+                script.src = "data/loader.js";
+                document.body.appendChild(script);
+            }
+            
+            // Загрузка игры по URL
+            function loadGameFromUrl(romUrl, gameName) {
+                loadGame(romUrl, gameName, defaultCore);
+            }
+// Обновленная проверка ориентации экрана
+            function checkOrientation() {
+                // Определяем, находится ли устройство в портретной ориентации
+                const isPortrait = window.innerHeight > window.innerWidth;
+                
+                // Отображаем сообщение только один раз при запуске игры в портретной ориентации
+                if (isPortrait && !display.classList.contains('hidden') && window.innerWidth < 768 && isMobile && !window.orientationShown) {
+                    orientationMessage.style.opacity = '1';
+                    orientationMessage.style.display = 'flex';
+                    
+                    // Добавляем обработчик клавиши Escape и физической кнопки "Назад" для закрытия сообщения
+                    const handleEscapeKey = function(e) {
+                        if (e.key === 'Escape' || e.keyCode === 27) {
+                            window.orientationShown = true;
+                            orientationMessage.style.display = 'none';
+                            document.removeEventListener('keydown', handleEscapeKey);
+                        }
+                    };
+                    document.addEventListener('keydown', handleEscapeKey);
+                    
+                    // Автоматически скрываем сообщение через 5 секунд, если пользователь не взаимодействует с ним
+                    setTimeout(() => {
+                        if (orientationMessage.style.display !== 'none') {
+                            window.orientationShown = true;
+                            orientationMessage.style.display = 'none';
+                        }
+                    }, 5000);
+                } else if (!isPortrait) {
+                    // Прячем сообщение при повороте в горизонтальное положение
+                    orientationMessage.style.display = 'none';
+                    window.orientationShown = true;
+                }
+                
+                // Восстанавливаем полноэкранный режим при изменении ориентации, если игра запущена
+                if (!display.classList.contains('hidden') && isMobile) {
+                    // Небольшая задержка для корректной работы
+                    setTimeout(() => {
+                        if (!document.body.classList.contains('fullscreen-mode')) {
+                            enableFullscreen();
+                        } else {
+                            // Обновляем расположение canvas для предотвращения растягивания
+                            fixCanvasScaling();
+                        }
+                    }, 300);
+                }
+            }
+            
+            // Обработка изменения ориентации
+            window.addEventListener('orientationchange', function() {
+                // Пометка времени изменения ориентации
+                window.lastOrientationChange = Date.now();
+                
+                // Задержка для корректной обработки события
+                setTimeout(() => {
+                    // Обновляем состояние ориентационного сообщения
+                    checkOrientation();
+                    
+                    // Фиксируем масштабирование, если эмулятор активен
+                    if (!display.classList.contains('hidden')) {
+                        fixCanvasScaling();
+                    }
+                }, 300);
+            });
+            
+            // Дополнительная обработка изменения размера окна
+            window.addEventListener('resize', function() {
+                // Адаптация высоты области отображения игры при изменении размера окна
+                if (!display.classList.contains('hidden')) {
+                    const viewportHeight = window.innerHeight;
+                    const headerHeight = document.getElementById('header').offsetHeight;
+                    display.style.height = (viewportHeight - headerHeight - 20) + 'px';
+                    
+                    // Проверяем и восстанавливаем полноэкранный режим при изменении размеров
+                    setTimeout(checkOrientation, 200);
+                }
+            });
+            
+            // Инициализация библиотеки игр
+            function initGameLibrary() {
+                // Библиотека игр с реальными путями к ROM-файлам
+                const libraryGames = [
+                    { id: "mario", title: "Super Mario Bros", romUrl: "roms/Mario.nes" },
+                    { id: "contra", title: "Contra", romUrl: "roms/Contra.nes" },
+                    { id: "battle_city", title: "Battle City", romUrl: "roms/Battle City.nes" },
+                    { id: "duck_hunt", title: "Duck Hunt", romUrl: "roms/Duck Hunt.nes" },
+                    { id: "tetris", title: "Tetris", romUrl: "roms/Tetris.nes" },
+                    { id: "ninja_gaiden", title: "Ninja Gaiden", romUrl: "roms/Ninja Gaiden.nes" }
+                ];
+                
+                // Очищаем список игр
+                gamesList.innerHTML = '';
+                
+                // Заполняем список игр
+                libraryGames.forEach(game => {
+                    const gameCard = document.createElement('div');
+                    gameCard.className = 'gameCard';
+                    gameCard.innerHTML = `
+                        <div class="gameIcon">NES</div>
+                        <div class="gameTitle">${game.title}</div>
+                    `;
+                    
+                    // Обработка клика и тача по игре
+                    gameCard.onclick = () => {
+                        loadGameFromUrl(game.romUrl, game.title);
+                    };
+                    // Добавляем поддержку касаний для мобильных устройств
+                    gameCard.addEventListener('touchend', (e) => {
+                        e.preventDefault(); // Предотвращаем стандартное поведение
+                        loadGameFromUrl(game.romUrl, game.title);
+                    });
+                    
+                    gamesList.appendChild(gameCard);
+                });
+            }
+            
+            // Интеграция с Telegram WebApp
+            function initTelegramWebApp() {
+                if (window.Telegram && window.Telegram.WebApp) {
+                    const tg = window.Telegram.WebApp;
+                    
+                    // Инициализация WebApp
+                    tg.expand();
+                    tg.enableClosingConfirmation();
+                    
+                    // Устанавливаем цвета в соответствии с темой Telegram
+                    if (tg.colorScheme === 'dark') {
+                        document.body.style.backgroundColor = '#1E1E1E';
+                    } else {
+                        document.body.style.backgroundColor = '#F5F5F5';
+                        document.body.style.color = '#000';
+                        
+                        // Дополнительные стили для светлой темы
+                        document.querySelectorAll('.gameCard').forEach(card => {
+                            card.style.backgroundColor = '#E0E0E0';
+                        });
+                        
+                        document.querySelectorAll('.gameTitle').forEach(title => {
+                            title.style.color = '#333';
+                        });
+                        
+                        document.querySelectorAll('.gameIcon').forEach(icon => {
+                            icon.style.backgroundColor = '#CCC';
+                        });
+                        
+                        document.getElementById('gameSelect').style.backgroundColor = '#EFEFEF';
+                        document.getElementById('uploadBox').style.backgroundColor = '#E0E0E0';
+                        document.getElementById('uploadText').style.color = '#555';
+                    }
+                    
+                    // Адаптация под безопасную зону экрана
+                    if (tg.isExpanded) {
+                        const safeAreaBottom = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--tg-viewport-stable-height')) || 0;
+                        if (safeAreaBottom) {
+                            document.body.style.paddingBottom = safeAreaBottom + 'px';
+                        }
+                    }
+                }
+            }
+// Автоматическая адаптация под размер экрана
+            function adjustForScreenSize() {
+                // Адаптация размера игровых карточек под ширину экрана
+                const container = document.querySelector('.container');
+                const containerWidth = container.offsetWidth;
+                
+                if (containerWidth < 400) {
+                    document.getElementById('gamesList').style.gridTemplateColumns = 'repeat(auto-fill, minmax(85px, 1fr))';
+                } else if (containerWidth < 600) {
+                    document.getElementById('gamesList').style.gridTemplateColumns = 'repeat(auto-fill, minmax(100px, 1fr))';
+                } else {
+                    document.getElementById('gamesList').style.gridTemplateColumns = 'repeat(auto-fill, minmax(140px, 1fr))';
+                }
+                
+                // При запуске игры проверяем ориентацию
+                if (!display.classList.contains('hidden')) {
+                    checkOrientation();
+                }
+            }
+            
+            // Инициализация при загрузке страницы
+            window.onload = function() {
+                // Инициализируем глобальные переменные
+                window.orientationShown = false; // Флаг для отслеживания показа сообщения об ориентации
+                window.currentRomUrl = null; // Текущий ROM для возможной перезагрузки
+                window.currentGameName = null; // Текущее название игры
+                window.lastResumeTime = 0; // Время последнего восстановления
+                window.isEmulatorActive = false; // Флаг активности эмулятора
+                window.emulatorLastState = null; // Состояние эмулятора перед сном
+                
+                initGameLibrary();
+                initTelegramWebApp();
+                adjustForScreenSize();
+                
+                // Добавляем обработчики для диалога ориентации
+                document.getElementById('orientationMessage').addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        window.orientationShown = true;
+                        this.style.display = 'none';
+                    }
+                });
+                
+                document.getElementById('startPlayButton').addEventListener('click', function(e) {
+                    window.orientationShown = true;
+                    document.getElementById('orientationMessage').style.display = 'none';
+                    e.stopPropagation();
+                });
+                
+                document.getElementById('closeOrientationButton').addEventListener('click', function(e) {
+                    window.orientationShown = true;
+                    document.getElementById('orientationMessage').style.display = 'none';
+                    e.stopPropagation();
+                });
+                
+                // Добавляем обработчик для кнопки принудительной остановки (для отладки)
+                document.getElementById('forceStopButton').addEventListener('click', function() {
+                    stopEmulator();
+                    alert('Эмулятор принудительно остановлен');
+                });
+                
+                // Обработка закрытия окна/вкладки для очистки ресурсов
+                window.addEventListener('beforeunload', function() {
+                    stopEmulator();
+                });
+                
+                // Регистрируем улучшенный обработчик событий Visibility API
+                document.addEventListener('visibilitychange', handleVisibilityChange);
+                
+                // Прослушиваем события фокуса окна
+                window.addEventListener('focus', function() {
+                    if (!display.classList.contains('hidden') && isMobile) {
+                        setTimeout(resumeEmulator, 500);
+                    }
+                });
+                
+                // Прослушиваем события потери фокуса окна
+                window.addEventListener('blur', function() {
+                    if (!display.classList.contains('hidden')) {
+                        if (window.EJS_emulator && typeof window.EJS_emulator.pause === 'function') {
+                            window.EJS_emulator.pause();
+                        }
+                    }
+                });
+                
+                // Дополнительный обработчик для аппаратной кнопки "Назад" на Android
+                if (window.history && history.pushState) {
+                    // Добавляем фиктивное состояние истории для перехвата нажатия "Назад"
+                    history.pushState(null, null, window.location.href);
+                    
+                    window.addEventListener('popstate', function(e) {
+                        // Если открыто диалоговое окно ориентации, закрываем его
+                        if (!window.orientationShown && orientationMessage.style.display !== 'none') {
+                            window.orientationShown = true;
+                            orientationMessage.style.display = 'none';
+                            
+                            // Предотвращаем выход из приложения
+                            history.pushState(null, null, window.location.href);
+                            return;
+                        }
+                        
+                        // Если эмулятор активен, вернемся в главное меню
+                        if (!display.classList.contains('hidden')) {
+                            backButton.click();
+                            
+                            // Предотвращаем выход из приложения
+                            history.pushState(null, null, window.location.href);
+                        }
+                    });
+                }
+                
+                // Предотвращаем скроллинг и другие жесты на мобильных устройствах
+                if (isMobile) {
+                    // Блокируем все жесты кроме взаимодействия с эмулятором
+                    document.addEventListener('touchmove', function(e) {
+                        if (!display.classList.contains('hidden')) {
+                            e.preventDefault();
+                        }
+                    }, { passive: false });
+                    
+                    document.addEventListener('touchstart', function(e) {
+                        if (!display.classList.contains('hidden') && 
+                            !e.target.closest('#backButton') && 
+                            !e.target.closest('#reloadEmulatorButton')) {
+                            // Позволяем жесты только для UI элементов эмулятора
+                            if (!e.target.closest('.ejs_virtualGamepad') && 
+                                !e.target.closest('.ejs_virtualGamepad_button') &&
+                                !e.target.closest('.ejs_virtualGamepad_touchpad') &&
+                                !e.target.closest('canvas')) {
+                                e.preventDefault();
+                            }
+                        }
+                    }, { passive: false });
+                }
+
+// Улучшенный обработчик для диалога ориентации - закрывается при нажатии на любую область
+document.getElementById('orientationMessage').addEventListener('click', function() {
+    window.orientationShown = true;
+    this.style.display = 'none';
+});
+                
+                // Наблюдатель мутаций для отслеживания изменений в DOM и применения стилей к новым canvas
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.addedNodes && mutation.addedNodes.length > 0) {
+                            for (let i = 0; i < mutation.addedNodes.length; i++) {
+                                const node = mutation.addedNodes[i];
+                                // Если добавлен canvas, применяем стили
+                                if (node.nodeName === 'CANVAS') {
+                                    node.style.objectFit = 'contain';
+                                    node.style.maxWidth = '100%';
+                                    node.style.maxHeight = '100%';
+                                    node.style.width = 'auto';
+                                    node.style.height = 'auto';
+                                    node.style.position = 'absolute';
+                                    node.style.left = '50%';
+                                    node.style.top = '50%';
+                                    node.style.transform = 'translate(-50%, -50%)';
+                                    node.style.backgroundColor = '#000';
+                                    node.style.imageRendering = 'pixelated';
+                                }
+                            }
+                        }
+                    });
+                });
+                
+                // Начинаем наблюдение за изменениями в DOM когда эмулятор активен
+                const gameContainer = document.getElementById('game');
+                observer.observe(gameContainer, { childList: true, subtree: true });
+            };
+        </script>
+    </body>
+</html>
