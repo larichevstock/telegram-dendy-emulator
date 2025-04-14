@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dendy Emulator для Telegram</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        /* Основные стили */
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            background-color: #282c34;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .retro-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        /* Заголовок */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #ff0080, #ff8c00);
+            border-radius: 12px;
+            padding: 10px 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .logo { display: flex; align-items: center; }
+        .logo img { width: 50px; height: 50px; border-radius: 50%; margin-right: 10px; border: 2px solid #fff; }
+        .logo-text { font-family: 'Press Start 2P', cursive; color: #fff; text-shadow: 2px 2px 0 #000; }
+        .logo-text h1 { margin: 0; font-size: 1.5em; }
+        .logo-text p { margin: 5px 0 0 0; font-size: 0.8em; }
+        .navigation { display: flex; gap: 10px; }
+        .nav-button { background-color: rgba(0,0,0,0.3); color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; transition: all 0.2s; }
+        .nav-button:hover { background-color: rgba(0,0,0,0.5); transform: scale(1.1); }
+
+        /* Поисковая строка */
+        .search-container { position: relative; margin-bottom: 20px; max-width: 1200px; width: 100%; margin-left: auto; margin-right: auto; }
+        .search-input { width: 100%; padding: 15px 45px 15px 20px; border: none; border-radius: 25px; background-color: rgba(255, 255, 255, 0.1); color: #fff; font-size: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: all 0.3s; box-sizing: border-box; }
+        .search-input:focus { outline: none; background-color: rgba(255, 255, 255, 0.15); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); }
+        .search-button { position: absolute; right: 5px; top: 5px; background: linear-gradient(90deg, #ff0080, #ff8c00); color: #fff; border: none; border-radius: 20px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; transition: all 0.2s; }
+        .search-button:hover { transform: scale(1.05); }
+
+        /* --- СТИЛИ С ИЗМЕНЕНИЯМИ --- */
+
+        /* Категории */
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Возвращаем 2 колонки */
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .category-card {
+            background: linear-gradient(135deg, #1e2033, #373b59);
+            border-radius: 12px;
+            padding: 15px; /* Возвращаем padding */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            position: relative;
+        }
+        .category-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3); }
+        .category-icon { font-size: 36px; margin-bottom: 10px; position: relative; z-index: 1; }
+        .category-icon img { width: 60px; height: 60px; object-fit: contain; }
+        .category-title {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 14px; /* Возвращаем размер */
+            color: #fff;
+            text-shadow: 1px 1px 0 #000;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+        .category-card::after { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(255, 0, 128, 0.1), rgba(255, 140, 0, 0.1)); z-index: 0; opacity: 0; transition: opacity 0.3s; }
+        .category-card:hover::after { opacity: 1; }
+
+        /* Большие карточки */
+        .featured-games {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Возвращаем 2 колонки */
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .featured-card {
+            background: linear-gradient(135deg, #373b59, #1e2033);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+        }
+        .featured-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3); }
+        .featured-content { position: relative; z-index: 1; flex-grow: 1; }
+        .featured-title {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 16px;
+            color: #fff;
+            text-shadow: 1px 1px 0 #000;
+            margin: 0 0 30px 0; /* Возвращаем отступ */
+        }
+        .featured-image {
+            width: 100%;
+            height: 120px; /* Возвращаем высоту */
+            object-fit: contain;
+            margin-top: auto;
+        }
+        .arrow-button { position: absolute; bottom: 10px; right: 10px; background: linear-gradient(90deg, #ff0080, #ff8c00); color: #fff; border: none; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; font-weight: bold; transition: all 0.2s; z-index: 2; }
+        .arrow-button:hover { transform: scale(1.1); }
+
+        /* Секция 8-bit Хиты и сетка игр */
+        .retro-hits { margin-bottom: 20px; }
+        .retro-hits-title { font-family: 'Press Start 2P', cursive; font-size: 18px; color: #fff; text-shadow: 1px 1px 0 #000; margin: 0 0 15px 0; text-align: center; }
+        .retro-games-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* Возвращаем 3 колонки */
+            gap: 15px; /* Возвращаем разрыв */
+            margin-bottom: 15px;
+        }
+        .retro-game-card {
+            background: linear-gradient(135deg, #1e2033, #373b59);
+            border-radius: 12px;
+            padding: 15px; /* Возвращаем padding */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        .retro-game-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3); }
+        .retro-game-image {
+            display: block;
+            width: 100%;
+            max-width: 90px; /* Оставляем 90px, можно настроить */
+            height: auto;
+            object-fit: contain;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            background-color: rgba(0,0,0,0.1);
+        }
+        .retro-game-title {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px; /* Возвращаем размер */
+            color: #fff;
+            margin: 0;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+
+        /* --- КОНЕЦ СТИЛЕЙ С ИЗМЕНЕНИЯМИ --- */
+
+        /* ROM Загрузка */
+        .rom-upload { background: linear-gradient(135deg, #1e2033, #373b59); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); }
+        .rom-upload-title { font-family: 'Press Start 2P', cursive; font-size: 18px; color: #fff; text-shadow: 1px 1px 0 #000; margin: 0 0 15px 0; text-align: center; }
+        .upload-box { width: 100%; height: 120px; border: 2px dashed #555; border-radius: 8px; display: flex; align-items: center; justify-content: center; background-color: rgba(0, 0, 0, 0.2); transition: all 0.3s; cursor: pointer; position: relative; }
+        .upload-box:hover, .upload-box[drag] { border-color: #ff0080; background-color: rgba(0, 0, 0, 0.3); }
+        .file-input { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10; }
+        .upload-text { font-size: 16px; color: #aaa; text-align: center; padding: 0 15px; }
+        .upload-text strong { color: #fff; display: block; margin-bottom: 5px; }
+
+        /* Новости/Баннер */
+        .news-banner { background: linear-gradient(135deg, #1e2033, #373b59); border-radius: 12px; padding: 20px; margin-bottom: 20px; position: relative; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); }
+        .news-banner:hover { box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3); }
+        .news-content { position: relative; z-index: 1; display: flex; align-items: center; }
+        .news-text { flex: 1; }
+        .news-title { font-family: 'Press Start 2P', cursive; font-size: 16px; color: #fff; text-shadow: 1px 1px 0 #000; margin: 0 0 10px 0; }
+        .news-description { color: rgba(255, 255, 255, 0.8); margin: 0; font-size: 14px; }
+        .news-icon { font-size: 36px; color: #ff0080; margin-right: 15px; }
+
+        /* Эмулятор и его управление */
+        #display { width: 100%; height: calc(100vh - 160px); max-height: 600px; background-color: #000; border-radius: 12px; overflow: hidden; position: relative; margin-bottom: 20px; }
+        #game { width: 100%; height: 100%; }
+        #backButton { position: fixed; top: 15px; left: 15px; background-color: rgba(0,0,0,0.3); color: white; border: none; border-radius: 50%; width: 36px; height: 36px; display: none; align-items: center; justify-content: center; cursor: pointer; z-index: 1002; font-size: 22px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        #backButton:hover { background-color: rgba(0,0,0,0.5); }
+        #reloadEmulatorButton { position: fixed; top: 15px; right: 15px; background-color: rgba(0,0,0,0.3); color: white; border: none; border-radius: 50%; width: 36px; height: 36px; display: none; align-items: center; justify-content: center; cursor: pointer; z-index: 1002; font-size: 20px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        #reloadEmulatorButton:hover { background-color: rgba(0,0,0,0.5); }
+        #orientationMessage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; padding: 20px; box-sizing: border-box; transition: opacity 0.3s ease; -webkit-tap-highlight-color: transparent; user-select: none; }
+        #startPlayButton { background-color: #FF0000; color: white; border: none; border-radius: 8px; padding: 15px 30px; font-size: 20px; font-weight: bold; margin-bottom: 30px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.3); transition: transform 0.1s ease, background-color 0.2s ease; -webkit-tap-highlight-color: transparent; }
+        #startPlayButton:hover { background-color: #D00000; transform: translateY(2px); }
+        .loading-state { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; }
+        .loading-spinner { width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 1s ease-in-out infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-indicator { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 2000; display: none; }
+        .loading-indicator::after { content: ""; width: 50px; height: 50px; border: 5px solid #fff; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite; }
+
+        /* Полноэкранный режим */
+        .fullscreen-mode #display { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; max-height: none !important; z-index: 1000 !important; border-radius: 0 !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; background-color: #000 !important; }
+        .fullscreen-mode #game { width: 100% !important; height: 100% !important; position: relative !important; display: flex !important; align-items: center !important; justify-content: center !important; overflow: hidden !important; background-color: #000 !important; }
+        .fullscreen-mode #game canvas { object-fit: contain !important; max-width: 100% !important; max-height: 100% !important; width: auto !important; height: auto !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; image-rendering: pixelated !important; background-color: #000 !important; -webkit-backface-visibility: hidden !important; backface-visibility: hidden !important; }
+        .fullscreen-mode .ejs_virtualGamepad, .fullscreen-mode .ejs_virtualGamepad_button, .fullscreen-mode .ejs_virtualGamepad_touchpad { z-index: 1002 !important; }
+        .hidden { display: none !important; }
+        body.touch-disabled { touch-action: none !important; -ms-touch-action: none !important; overflow: hidden !important; }
+
+        /* Стили для секции результатов поиска */
+        #search-results-area {
+            padding-top: 20px;
+        }
+        .search-results-title {
+             font-family: 'Press Start 2P', cursive;
+             font-size: 18px;
+             color: #fff;
+             text-shadow: 1px 1px 0 #000;
+             margin: 0 0 15px 0;
+             text-align: center;
+        }
+        .back-to-main-button {
+            display: block;
+            margin: 20px auto 10px auto;
+            padding: 10px 20px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px;
+            color: #fff;
+            background: linear-gradient(90deg, #555, #333);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-shadow: 1px 1px 0 #000;
+        }
+        .back-to-main-button:hover {
+             background: linear-gradient(90deg, #666, #444);
+        }
+
+        /* Адаптивность */
+        @media (min-width: 768px) {
+            .categories {
+                grid-template-columns: repeat(3, 1fr); /* 3 колонки для категорий */
+            }
+            .retro-games-grid {
+                grid-template-columns: repeat(4, 1fr); /* 4 колонки для игр */
+            }
+            /* .featured-games остаются 2 колонки */
+        }
+
+        @media (max-width: 600px) {
+            .header { flex-direction: column; text-align: center; padding: 15px; }
+            .logo { margin-bottom: 10px; justify-content: center; }
+            .navigation { width: 100%; justify-content: center; }
+            .featured-games {
+                grid-template-columns: 1fr; /* 1 колонка для больших карточек */
+            }
+            .news-content { flex-direction: column; text-align: center; }
+            .news-icon { margin: 0 0 15px 0; }
+             .retro-games-grid {
+                grid-template-columns: repeat(2, 1fr); /* 2 колонки для игр */
+                gap: 10px;
+            }
+             /* .categories остаются 2 колонки */
+        }
+        @media (max-width: 480px) {
+            /* Стили для маленьких экранов остаются */
+             .rom-upload-title, .retro-hits-title { font-size: 14px; }
+             .upload-box { height: 100px; }
+             .upload-text { font-size: 14px; }
+             .search-results-title { font-size: 16px; }
+             /* .retro-game-title и .category-title могут быть дополнительно уменьшены здесь при необходимости */
+        }
+         @media (max-width: 360px) {
+             /* Стили для очень маленьких экранов остаются */
+             .retro-games-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+             .retro-game-image { max-width: 70px; }
+             .retro-game-title { font-size: 10px; }
+             .retro-game-card { padding: 10px 5px; }
+             .category-title { font-size: 12px; } /* Можно уменьшить для очень узких экранов */
+        }
+
+    </style>
+</head>
+<body>
+    <div class="retro-container" id="retro-container">
+        <div class="header">
+            <div class="logo">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cGF0aCBmaWxsPSIjRkYwMDAwIiBkPSJNNTAsMTBjMjIuMSwwLDQwLDE3LjksNDAsNDBTNzIuMSw5MCw1MCw5MFMxMCw3Mi4xLDEwLDUwUzI3LjksMTAsNTAsMTB6Ii8+PHBhdGggZmlsbD0iI0ZGRkZGRiIgZD0iTTM1LDM1aDMwdjMwSDM1VjM1eiIvPjxjaXJjbGUgZmlsbD0iI0ZGRkZGRiIgY3g9IjI1IiBjeT0iMzUiIHI9IjUiLz48Y2lyY2xlIGZpbGw9IiNGRkZGRkYiIGN4PSI3NSIgY3k9IjM1IiByPSI1Ii8+PGNpcmNsZSBmaWxsPSIjRkZGRkZGIiBjeD0iNzUiIGN5PSI2NSIgcj0iNSIvPjxjaXJjbGUgZmlsbD0iI0ZGRkZGRiIgY3g9IjI1IiBjeT0iNjUiIHI9IjUiLz48L3N2Zz4=" alt="Logo" />
+                <div class="logo-text">
+                    <h1>Dendy</h1>
+                    <p>Ретро-эмулятор</p>
+                </div>
+            </div>
+            <div class="navigation">
+                <button class="nav-button" title="Главная">🏠</button>
+                <button class="nav-button" title="Каталог игр">🎮</button>
+                <button class="nav-button" title="Избранное">⭐</button>
+            </div>
+        </div>
+
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Поиск любимых игр..." />
+            <button class="search-button">🔍</button>
+         </div>
+
+        <div id="main-content">
+            <div class="categories">
+                <div class="category-card"> <div class="category-icon">🏆</div> <h3 class="category-title">ТОП ИГР</h3> </div>
+                <div class="category-card"> <div class="category-icon">🔤</div> <h3 class="category-title">ПО АЛФАВИТУ</h3> </div>
+                <div class="category-card"> <div class="category-icon">🎲</div> <h3 class="category-title">СЛУЧАЙНАЯ</h3> </div>
+                <div class="category-card"> <div class="category-icon">📊</div> <h3 class="category-title">ПОПУЛЯРНЫЕ</h3> </div>
+                <div class="category-card"> <div class="category-icon">🔄</div> <h3 class="category-title">НЕДАВНИЕ</h3> </div>
+                <div class="category-card"> <div class="category-icon">📱</div> <h3 class="category-title">ПОДЕЛИТЬСЯ</h3> </div>
+            </div>
+
+            <div class="retro-hits">
+                <h2 class="retro-hits-title">8-BIT ХИТЫ</h2>
+                <div class="retro-games-grid" id="retro-games-grid">
+                    </div>
+            </div>
+
+            <div class="rom-upload">
+                <h2 class="rom-upload-title">ЗАГРУЗИТЬ ROM</h2>
+                <div class="upload-box" id="upload-box">
+                    <input type="file" id="fileInput" accept=".nes,.fds,.unif,.unf" class="file-input">
+                    <div class="upload-text"> <strong>Загрузите ROM-файл</strong> Перетащите файл или нажмите здесь </div>
+                </div>
+            </div>
+
+            <div class="featured-games">
+                <div class="featured-card"> <div class="featured-content"> <h3 class="featured-title">ПРОДОЛЖИТЬ ИГРУ</h3> <img src="data/img/next.png" alt="ПРОДОЛЖИТЬ ИГРУ" class="featured-image"> </div> <button class="arrow-button">→</button> </div>
+                <div class="featured-card"> <div class="featured-content"> <h3 class="featured-title">КАТАЛОГ ИГР</h3> <img src="data/img/catalog.png" alt="Dendy каталог" class="featured-image"> </div> <button class="arrow-button">→</button> </div>
+            </div>
+
+            <div class="news-banner">
+                <div class="news-content"> <div class="news-icon">📰</div> <div class="news-text"> <h3 class="news-title">НОВОСТИ И ОБНОВЛЕНИЯ</h3> <p class="news-description">Следите за обновлениями и новыми играми в нашем канале!</p> </div> <button class="arrow-button">→</button> </div>
+            </div>
+        </div> <div id="search-results-area" class="hidden">
+            </div>
+
+        <div id="display" class="hidden">
+            <div id="game"></div>
+        </div>
+    </div> <button id="backButton">&#10229;</button>
+    <button id="reloadEmulatorButton">↻</button>
+
+    <div id="orientationMessage">
+        <button id="startPlayButton">Начать играть</button>
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M17 2H7C5.9 2 5 2.9 5 4v16c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"></path> <path d="M12 18h.01"></path> </svg>
+        <h2 style="margin: 15px 0;">Для лучшего опыта</h2>
+        <p style="font-size: 16px; margin: 0 0 20px 0;">Поверните устройство в горизонтальное положение для более комфортной игры</p>
+    </div>
+
+    <div id="loadingState" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Перезагрузка эмулятора...</p>
+    </div>
+
+    <div id="loadingIndicator" class="loading-indicator"></div>
+
+    <script>
+        // Конфигурация
+        const enableDebug = false;
+        const enableThreads = false;
+        const defaultCore = "nes";
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+        // Ждем, пока DOM полностью загрузится
+        document.addEventListener('DOMContentLoaded', function() {
+            // Основные элементы интерфейса
+            const fileInput = document.getElementById('fileInput');
+            const uploadBox = document.getElementById('upload-box');
+            const display = document.getElementById('display');
+            const backButton = document.getElementById('backButton'); // Кнопка НАЗАД ИЗ ЭМУЛЯТОРА
+            const reloadEmulatorButton = document.getElementById('reloadEmulatorButton');
+            const startPlayButton = document.getElementById('startPlayButton');
+            const orientationMessage = document.getElementById('orientationMessage');
+            const loadingState = document.getElementById('loadingState');
+            const mainContent = document.getElementById('main-content');
+            const initialRetroGamesGrid = document.getElementById('retro-games-grid'); // Сетка для "Хитов"
+            const searchInput = document.querySelector('.search-input');
+            const searchButton = document.querySelector('.search-button');
+            const searchResultsArea = document.getElementById('search-results-area');
+
+            // Список игр
+            const libraryGames = [
+                { id: "mario", title: "Super Mario Bros", romUrl: "roms/Mario.nes" },
+                { id: "contra", title: "Contra", romUrl: "roms/Contra.nes" },
+                { id: "battle_city", title: "Battle City", romUrl: "roms/Battle City.nes" },
+                { id: "duck_hunt", title: "Duck Hunt", romUrl: "roms/Duck Hunt.nes" },
+                { id: "tetris", title: "Tetris", romUrl: "roms/Tetris.nes" },
+                { id: "ninja_gaiden", title: "Ninja Gaiden", romUrl: "roms/Ninja Gaiden.nes" }
+                // Добавь сюда больше игр, если нужно
+            ];
+
+            // Глобальные переменные
+            window.orientationShown = false; window.currentRomUrl = null; window.currentGameName = null; window.isEmulatorActive = false;
+
+            // Карта изображений
+            const imageMap = { "mario": "mario.webp", "contra": "contra.webp", "battle_city": "battlecity.webp", "duck_hunt": "duckhunt.webp", "tetris": "tetris.webp", "ninja_gaiden": "ninja.webp" };
+            const imgBasePath = "data/img/games/";
+
+            // Универсальная функция для отрисовки сетки игр
+            function renderGamesGrid(gamesToRender, targetGridElement) {
+                targetGridElement.innerHTML = '';
+                if (!gamesToRender || gamesToRender.length === 0) {
+                    targetGridElement.innerHTML = '<p style="color: #aaa; grid-column: 1 / -1; text-align: center; margin-top: 20px;">Игры не найдены.</p>';
+                    return;
+                }
+                gamesToRender.forEach(game => {
+                    const gameCard = document.createElement('div');
+                    gameCard.className = 'retro-game-card';
+                    const imageName = imageMap[game.id] || "placeholder.webp";
+                    const imagePath = imgBasePath + imageName;
+                    gameCard.innerHTML = `
+                        <img src="${imagePath}" alt="${game.title}" class="retro-game-image" onerror="this.style.display='none'; this.onerror=null;">
+                        <div class="retro-game-title">${game.title}</div>
+                    `;
+                    gameCard.addEventListener('click', () => loadGameFromUrl(game.romUrl, game.title));
+                    targetGridElement.appendChild(gameCard);
+                });
+            }
+
+            // Функция выполнения поиска
+            function performSearch() {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                if (!searchTerm) return;
+                const filteredGames = libraryGames.filter(game => game.title.toLowerCase().includes(searchTerm));
+                searchResultsArea.innerHTML = ''; // Очистка
+
+                // Создание заголовка и кнопки "Назад"
+                const titleElement = document.createElement('h2');
+                titleElement.className = 'search-results-title';
+                titleElement.textContent = `Результаты поиска: "${searchInput.value}"`;
+                searchResultsArea.appendChild(titleElement);
+                const backToMainButton = document.createElement('button');
+                backToMainButton.className = 'back-to-main-button';
+                backToMainButton.textContent = '‹ Назад к играм';
+                backToMainButton.onclick = showMainContent;
+                searchResultsArea.appendChild(backToMainButton);
+
+                // Создание сетки для результатов
+                const resultsGrid = document.createElement('div');
+                resultsGrid.className = 'retro-games-grid';
+                searchResultsArea.appendChild(resultsGrid);
+
+                // Отрисовка результатов
+                renderGamesGrid(filteredGames, resultsGrid);
+
+                // Показ/скрытие секций
+                mainContent.classList.add('hidden');
+                searchResultsArea.classList.remove('hidden');
+                window.scrollTo(0, 0);
+            }
+
+            // Функция возврата к основному контенту
+            function showMainContent() {
+                searchResultsArea.classList.add('hidden');
+                mainContent.classList.remove('hidden');
+                searchInput.value = '';
+            }
+
+            // Загрузка игры по URL
+            function loadGameFromUrl(romUrl, gameName) { loadGame(romUrl, gameName, defaultCore); }
+
+            // Обработка перетаскивания файлов
+            uploadBox.addEventListener('dragover', function(e) { e.preventDefault(); this.setAttribute("drag", true); });
+            uploadBox.addEventListener('dragleave', function() { this.removeAttribute("drag"); });
+            uploadBox.addEventListener('drop', function(e) { e.preventDefault(); this.removeAttribute("drag"); if (e.dataTransfer.files.length > 0) { handleRomFile(e.dataTransfer.files[0]); } });
+
+            // Обработка выбора файла
+            fileInput.addEventListener('change', function() { if (this.files.length > 0) { handleRomFile(this.files[0]); } });
+
+            // Обработка ROM-файла
+            function handleRomFile(file) { const fileName = file.name; const parts = fileName.split("."); const extension = parts.pop().toLowerCase(); const gameName = parts.join("."); if (["fds", "nes", "unif", "unf"].includes(extension)) { loadGame(file, gameName, defaultCore); } else { alert("Этот формат файла не поддерживается. Пожалуйста, загрузите ROM в формате .nes, .fds, .unif или .unf"); } }
+
+            // Загрузка игры (основная логика)
+            function loadGame(romFile, gameName, core) {
+                stopEmulator();
+                window.currentRomUrl = romFile; window.currentGameName = gameName;
+                window.orientationShown = false; window.isEmulatorActive = true;
+                mainContent.classList.add('hidden'); searchResultsArea.classList.add('hidden');
+                display.classList.remove('hidden'); backButton.style.display = 'flex'; reloadEmulatorButton.style.display = 'flex';
+                if (isMobile) { enableFullscreen(); }
+                window.EJS_player = "#game"; window.EJS_gameName = gameName; window.EJS_biosUrl = ""; window.EJS_gameUrl = romFile; window.EJS_core = core; window.EJS_pathtodata = "data/"; window.EJS_startOnLoaded = true; window.EJS_DEBUG_XX = enableDebug; window.EJS_disableDatabases = true; window.EJS_threads = enableThreads;
+                window.EJS_onGameStart = function() { if (window.Telegram && window.Telegram.WebApp) { window.Telegram.WebApp.expand(); } setTimeout(fixCanvasScaling, 1000); };
+                const script = document.createElement("script"); script.id = "emulatorScript"; script.src = "data/loader.js"; document.body.appendChild(script);
+            }
+
+            // Кнопка возврата ИЗ ЭМУЛЯТОРА
+            backButton.addEventListener('click', function() {
+                stopEmulator();
+                display.classList.add('hidden'); mainContent.classList.remove('hidden'); searchResultsArea.classList.add('hidden');
+                backButton.style.display = 'none'; reloadEmulatorButton.style.display = 'none';
+                window.currentRomUrl = null; window.currentGameName = null; window.orientationShown = false; window.isEmulatorActive = false;
+            });
+
+            // Кнопка перезагрузки эмулятора
+            reloadEmulatorButton.addEventListener('click', function() { loadingState.style.display = 'flex'; setTimeout(() => { reloadEmulator(); setTimeout(() => { loadingState.style.display = 'none'; }, 1500); }, 500); });
+
+            // Проверка ориентации экрана
+            function checkOrientation() { const isPortrait = window.innerHeight > window.innerWidth; if (isPortrait && window.isEmulatorActive && window.innerWidth < 768 && isMobile && !window.orientationShown) { orientationMessage.style.opacity = '1'; orientationMessage.style.display = 'flex'; setTimeout(() => { if (orientationMessage.style.display !== 'none') { window.orientationShown = true; orientationMessage.style.display = 'none'; } }, 5000); } else if (!isPortrait && window.isEmulatorActive) { orientationMessage.style.display = 'none'; window.orientationShown = true; } if (window.isEmulatorActive && isMobile) { setTimeout(() => { if (!document.body.classList.contains('fullscreen-mode')) { enableFullscreen(); } else { fixCanvasScaling(); } }, 300); } }
+
+            // Исправление масштабирования canvas
+            function fixCanvasScaling() { const canvasElements = document.querySelectorAll('#game canvas'); canvasElements.forEach(canvas => { canvas.style.objectFit = 'contain'; canvas.style.maxWidth = '100%'; canvas.style.maxHeight = '100%'; canvas.style.width = 'auto'; canvas.style.height = 'auto'; canvas.style.position = 'absolute'; canvas.style.left = '50%'; canvas.style.top = '50%'; canvas.style.transform = 'translate(-50%, -50%)'; canvas.style.backgroundColor = '#000'; canvas.style.imageRendering = 'pixelated'; }); const gameContainer = document.getElementById('game'); if (gameContainer && document.body.classList.contains('fullscreen-mode')) { gameContainer.style.width = '100%'; gameContainer.style.height = '100%'; gameContainer.style.display = 'flex'; gameContainer.style.alignItems = 'center'; gameContainer.style.justifyContent = 'center'; gameContainer.style.overflow = 'hidden'; gameContainer.style.backgroundColor = '#000'; } }
+
+            // Включение полноэкранного режима
+            function enableFullscreen() { document.body.classList.add('fullscreen-mode'); document.body.classList.add('touch-disabled'); display.style.position = 'fixed'; display.style.top = '0'; display.style.left = '0'; display.style.width = '100vw'; display.style.height = '100vh'; display.style.maxHeight = 'none'; display.style.zIndex = '1000'; display.style.borderRadius = '0'; display.style.overflow = 'hidden'; display.style.backgroundColor = '#000'; fixCanvasScaling(); }
+
+            // Перезагрузка эмулятора
+            function reloadEmulator() { if (window.currentRomUrl && window.currentGameName) { stopEmulator(); setTimeout(() => { loadGame(window.currentRomUrl, window.currentGameName, defaultCore); }, 500); } }
+
+            // Останавливаем эмулятор
+            function stopEmulator() { stopAllAudio(); const gameContainer = document.getElementById('game'); while (gameContainer.firstChild) { gameContainer.removeChild(gameContainer.firstChild); } const oldScript = document.getElementById('emulatorScript'); if (oldScript) { oldScript.remove(); } window.EJS_player = null; window.EJS_gameUrl = null; window.EJS_core = null; window.EJS_pathtodata = null; window.EJS_startOnLoaded = null; window.EJS_onGameStart = null; if (window.EJS_emulator) { try { if (typeof window.EJS_emulator.pause === 'function') { window.EJS_emulator.pause(); } if (typeof window.EJS_emulator.stop === 'function') { window.EJS_emulator.stop(); } if (typeof window.EJS_emulator.destroy === 'function') { window.EJS_emulator.destroy(); } window.EJS_emulator = null; } catch (e) { console.error("Ошибка при остановке эмулятора:", e); } } window.isEmulatorActive = false; }
+
+            // Останавливаем все аудио
+            function stopAllAudio() { try { const audioElements = document.querySelectorAll('audio'); audioElements.forEach(audio => { audio.pause(); audio.currentTime = 0; }); if (window.AudioContext || window.webkitAudioContext) { if (window.EJS_emulator && window.EJS_emulator.audioContext && typeof window.EJS_emulator.audioContext.close === 'function') { try { window.EJS_emulator.audioContext.close().catch(e => console.warn("Не удалось закрыть аудиоконтекст", e)); } catch (e) { console.error("Ошибка при закрытии аудиоконтекста:", e); } } } } catch (e) { console.error("Ошибка при остановке аудио:", e); } }
+
+            // Интеграция с Telegram WebApp
+            function initTelegramWebApp() { if (window.Telegram && window.Telegram.WebApp) { const tg = window.Telegram.WebApp; tg.ready(); tg.expand(); tg.enableClosingConfirmation(); if (tg.colorScheme === 'dark') { document.body.style.backgroundColor = tg.themeParams.bg_color || '#282c34'; document.body.style.color = tg.themeParams.text_color || '#ffffff'; } else { document.body.style.backgroundColor = tg.themeParams.bg_color || '#F5F5F5'; document.body.style.color = tg.themeParams.text_color || '#000000'; } } }
+
+            // Обработчики событий ориентации/размера
+            window.addEventListener('orientationchange', () => setTimeout(checkOrientation, 300));
+            window.addEventListener('resize', () => { checkOrientation(); if (window.isEmulatorActive) { setTimeout(fixCanvasScaling, 100); } });
+            startPlayButton.addEventListener('click', (event) => { event.stopPropagation(); window.orientationShown = true; orientationMessage.style.display = 'none'; });
+            orientationMessage.addEventListener('click', function() { window.orientationShown = true; this.style.display = 'none'; });
+
+            // Назначаем обработчики на поиск
+            searchButton.addEventListener('click', performSearch);
+            searchInput.addEventListener('keydown', (event) => { if (event.key === 'Enter') { event.preventDefault(); performSearch(); } });
+
+            // Инициализация при загрузке страницы
+            renderGamesGrid(libraryGames, initialRetroGamesGrid); // Показываем "Хиты"
+            initTelegramWebApp(); // Инициализация Telegram
+
+            // Обработчики для больших карточек
+            document.querySelectorAll('.featured-card').forEach(card => { card.addEventListener('click', function() { const title = this.querySelector('.featured-title').textContent; if (title === "КАТАЛОГ ИГР") { const catalogSection = document.getElementById('retro-hits'); if (catalogSection) { catalogSection.scrollIntoView({ behavior: 'smooth' }); } } else if (title === "ПРОДОЛЖИТЬ ИГРУ") { alert("Функция 'Продолжить игру' в разработке!"); } }); });
+
+            // Наблюдатель за изменениями в DOM
+            const observer = new MutationObserver(function(mutations) { mutations.forEach(function(mutation) { if (mutation.addedNodes && mutation.addedNodes.length > 0) { for (let i = 0; i < mutation.addedNodes.length; i++) { const node = mutation.addedNodes[i]; if (node.nodeName === 'CANVAS' || (node.classList && node.classList.contains('ejs_canvas'))) { setTimeout(fixCanvasScaling, 50); break; } } } }); });
+            observer.observe(document.getElementById('game'), { childList: true, subtree: true });
+        });
+    </script>
+</body>
+</html>
