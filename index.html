@@ -1,0 +1,2040 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dendy Emulator для Telegram</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+
+/* CSS для кнопок избранного */
+.favorite-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 24px;
+    height: 24px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #ccc;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    z-index: 10;
+    transition: all 0.2s;
+}
+
+.favorite-button.add-favorite:hover {
+    color: #FFD700;
+}
+
+.favorite-button.remove-favorite {
+    color: #FFD700;
+}
+
+.favorite-button.remove-favorite:hover {
+    background-color: rgba(255, 0, 0, 0.7);
+    color: white;
+}
+
+.retro-game-card {
+    position: relative; /* Для правильного позиционирования кнопки избранного */
+}
+
+/* Стили для кнопки избранного на странице игры */
+#game-page-favorite-btn {
+    position: relative; /* Сбросим absolute позиционирование */
+    top: auto;
+    right: auto;
+    width: 30px;
+    height: 30px;
+    font-size: 20px;
+    margin-right: 10px; /* Отступ от жанра справа */
+    margin-left: auto; /* Прижимаем к правому краю между кнопкой назад и жанром */
+}
+
+/* Стили для контейнера заголовка на странице игры */
+.game-page-header {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start; /* Изменим с space-between на flex-start */
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+/* Стили для жанра, чтобы он не прижимался к правому краю */
+.game-page-genre {
+    margin-left: 0; /* Убираем auto margin */
+}        
+
+/* Основные стили */
+        body, html { height: 100%; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; -webkit-tap-highlight-color: transparent; background-color: #282c34; color: #ffffff; overflow-x: hidden; }
+        .retro-container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 15px; box-sizing: border-box; }
+        /* Заголовок */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: linear-gradient(90deg, #ff0080, #ff8c00); border-radius: 12px; padding: 10px 15px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); }
+        .logo { display: flex; align-items: center; } .logo img { width: 50px; height: 50px; border-radius: 50%; margin-right: 10px; border: 2px solid #fff; } .logo-text { font-family: 'Press Start 2P', cursive; color: #fff; text-shadow: 2px 2px 0 #000; } .logo-text h1 { margin: 0; font-size: 1.5em; } .logo-text p { margin: 5px 0 0 0; font-size: 0.8em; } .navigation { display: flex; gap: 10px; } .nav-button { background-color: rgba(0,0,0,0.3); color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; transition: all 0.2s; } .nav-button:hover { background-color: rgba(0,0,0,0.5); transform: scale(1.1); }
+        /* Поисковая строка */
+        .search-container { position: relative; margin-bottom: 20px; max-width: 1200px; width: 100%; margin-left: auto; margin-right: auto; } .search-input { width: 100%; padding: 15px 45px 15px 20px; border: none; border-radius: 25px; background-color: rgba(255, 255, 255, 0.1); color: #fff; font-size: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: all 0.3s; box-sizing: border-box; } .search-input:focus { outline: none; background-color: rgba(255, 255, 255, 0.15); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); } .search-button { position: absolute; right: 5px; top: 5px; background: linear-gradient(90deg, #ff0080, #ff8c00); color: #fff; border: none; border-radius: 20px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; transition: all 0.2s; } .search-button:hover { transform: scale(1.05); }
+        /* Категории */
+        .categories { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; } .category-card { background: linear-gradient(135deg, #1e2033, #373b59); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); overflow: hidden; position: relative; } .category-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3); } .category-icon { font-size: 36px; margin-bottom: 10px; position: relative; z-index: 1; } .category-icon img { width: 60px; height: 60px; object-fit: contain; } .category-title { font-family: 'Press Start 2P', cursive; font-size: 14px; color: #fff; text-shadow: 1px 1px 0 #000; margin: 0; position: relative; z-index: 1; line-height: 1.3; word-break: break-word; } .category-card::after { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(255, 0, 128, 0.1), rgba(255, 140, 0, 0.1)); z-index: 0; opacity: 0; transition: opacity 0.3s; } .category-card:hover::after { opacity: 1; }
+        /* Большие карточки */
+        .featured-games { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; } .featured-card { background: linear-gradient(135deg, #373b59, #1e2033); border-radius: 12px; padding: 20px; position: relative; overflow: hidden; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); display: flex; flex-direction: column; } .featured-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3); } .featured-content { position: relative; z-index: 1; flex-grow: 1; } .featured-title { font-family: 'Press Start 2P', cursive; font-size: 16px; color: #fff; text-shadow: 1px 1px 0 #000; margin: 0 0 30px 0; } .featured-image { width: 100%; height: 120px; object-fit: contain; margin-top: auto; } .arrow-button {
+    position: absolute;
+    right: 15px !important; /* Фиксированное расстояние от правого края */
+    bottom: 10px; /* Положение снизу */
+    background: linear-gradient(90deg, #ff0080, #ff8c00);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: bold;
+    text-shadow: 0px 1px 1px rgba(0,0,0,0.3); /* Добавляем тень для визуального эффекта */
+    transition: all 0.2s;
+    z-index: 2;
+}
+
+/* Специальное правило для стрелки в новостном баннере */
+.news-banner .arrow-button {
+    bottom: auto; /* Сбрасываем отступ снизу */
+    top: 50%; /* Центрируем по вертикали */
+    transform: translateY(-50%); /* Центрируем точно по вертикали */
+}
+
+.news-banner .arrow-button:hover {
+    transform: translateY(-50%) scale(1.1); /* Сохраняем центрирование при hover */
+}
+
+/* Перезаписываем все стили для news-banner */
+.news-banner {
+    position: relative; /* Убедимся, что родитель имеет relative */
+}
+
+.news-banner .arrow-button {
+    position: absolute;
+    bottom: 10px; 
+    right: 15px; /* Должен быть точно такой же как выше */
+}
+
+/* Также фиксируем позицию для .featured-card */
+.featured-card {
+    position: relative; /* Убедимся, что родитель имеет relative */
+}
+
+.featured-card .arrow-button {
+    position: absolute;
+    bottom: 10px;
+    right: 15px; /* Должен быть точно такой же как выше */
+}
+
+.arrow-button:hover {
+    transform: scale(1.1);
+}
+
+/* Применяем точное позиционирование для стрелки в новостях */
+.news-banner .arrow-button {
+    right: 20px !important; /* Использование important для перезаписи любых других стилей */
+}
+
+/* Специфический стиль для кнопки в блоке новостей */
+.news-banner .arrow-button {
+    bottom: auto; /* Сбрасываем позицию bottom */
+    top: 50%;    /* Центрируем по вертикали */
+    transform: translateY(-50%); /* Смещаем для точного центрирования */
+    right: 10px; /* Такой же отступ справа как у других кнопок */
+}
+
+.news-banner .arrow-button:hover {
+    transform: translateY(-50%) scale(1.1); /* Сохраняем центрирование и добавляем эффект увеличения */
+}
+
+/* Для мобильных устройств */
+@media (max-width: 600px) {
+    .news-banner .arrow-button {
+        top: auto; /* Отменяем центрирование по вертикали */
+        bottom: 10px; /* Возвращаем позиционирование снизу */
+        transform: none; /* Сбрасываем трансформацию */
+    }
+    
+    .news-banner .arrow-button:hover {
+        transform: scale(1.1); /* Обновляем эффект hover */
+    }
+}
+        /* Секция 8-bit Хиты и сетка игр */
+        .retro-hits { margin-bottom: 20px; } .retro-hits-title { font-family: 'Press Start 2P', cursive; font-size: 18px; color: #fff; text-shadow: 1px 1px 0 #000; margin: 0 0 15px 0; text-align: center; } .retro-games-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 15px; } .retro-game-card { background: linear-gradient(135deg, #1e2033, #373b59); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); overflow: hidden; } .retro-game-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3); } .retro-game-image { display: block; width: 100%; max-width: 90px; height: auto; object-fit: contain; margin-bottom: 8px; border-radius: 8px; background-color: rgba(0,0,0,0.1); } .retro-game-title { font-family: 'Press Start 2P', cursive; font-size: 12px; color: #fff; margin: 0; line-height: 1.3; word-break: break-word; }
+        /* ROM Загрузка */
+        .rom-upload { background: linear-gradient(135deg, #1e2033, #373b59); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); } .rom-upload-title { font-family: 'Press Start 2P', cursive; font-size: 18px; color: #fff; text-shadow: 1px 1px 0 #000; margin: 0 0 15px 0; text-align: center; } .upload-box { width: 100%; height: 120px; border: 2px dashed #555; border-radius: 8px; display: flex; align-items: center; justify-content: center; background-color: rgba(0, 0, 0, 0.2); transition: all 0.3s; cursor: pointer; position: relative; } .upload-box:hover, .upload-box[drag] { border-color: #ff0080; background-color: rgba(0, 0, 0, 0.3); } .file-input { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10; } .upload-text { font-size: 16px; color: #aaa; text-align: center; padding: 0 15px; } .upload-text strong { color: #fff; display: block; margin-bottom: 5px; }
+        /* Новости/Баннер */
+        .news-banner { background: linear-gradient(135deg, #1e2033, #373b59); border-radius: 12px; padding: 20px; margin-bottom: 20px; position: relative; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); } .news-banner:hover { box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3); } .news-content { position: relative; z-index: 1; display: flex; align-items: center; } .news-text { flex: 1; } .news-title { font-family: 'Press Start 2P', cursive; font-size: 16px; color: #fff; text-shadow: 1px 1px 0 #000; margin: 0 0 10px 0; } .news-description { color: rgba(255, 255, 255, 0.8); margin: 0; font-size: 14px; } .news-icon { font-size: 36px; color: #ff0080; margin-right: 15px; }
+        /* Эмулятор и его управление */
+        #display { width: 100%; height: calc(100vh - 160px); max-height: 600px; background-color: #000; border-radius: 12px; overflow: hidden; position: relative; margin-bottom: 20px; } #game { width: 100%; height: 100%; } #backButton { position: fixed; top: 15px; left: 15px; background-color: rgba(0,0,0,0.3); color: white; border: none; border-radius: 50%; width: 36px; height: 36px; display: none; align-items: center; justify-content: center; cursor: pointer; z-index: 1002; font-size: 22px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); background-color: transparent; } #backButton:hover { background-color: rgba(0,0,0,0.5); } #reloadEmulatorButton { position: fixed; top: 15px; right: 15px; background-color: rgba(0,0,0,0.3); color: white; border: none; border-radius: 50%; width: 36px; height: 36px; display: none; align-items: center; justify-content: center; cursor: pointer; z-index: 1002; font-size: 20px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); } #reloadEmulatorButton:hover { background-color: rgba(0,0,0,0.5); } #orientationMessage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; padding: 20px; box-sizing: border-box; transition: opacity 0.3s ease; -webkit-tap-highlight-color: transparent; user-select: none; } #startPlayButton { background-color: #FF0000; color: white; border: none; border-radius: 8px; padding: 15px 30px; font-size: 20px; font-weight: bold; margin-bottom: 30px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.3); transition: transform 0.1s ease, background-color 0.2s ease; -webkit-tap-highlight-color: transparent; } #startPlayButton:hover { background-color: #D00000; transform: translateY(2px); } .loading-state { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; } .loading-spinner { width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 1s ease-in-out infinite; } @keyframes spin { to { transform: rotate(360deg); } } .loading-indicator { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 2000; display: none; } .loading-indicator::after { content: ""; width: 50px; height: 50px; border: 5px solid #fff; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite; }
+        /* Полноэкранный режим */
+        .fullscreen-mode #display { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; max-height: none !important; z-index: 1000 !important; border-radius: 0 !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; background-color: #000 !important; } .fullscreen-mode #game { width: 100% !important; height: 100% !important; position: relative !important; display: flex !important; align-items: center !important; justify-content: center !important; overflow: hidden !important; background-color: #000 !important; } .fullscreen-mode #game canvas { object-fit: contain !important; max-width: 100% !important; max-height: 100% !important; width: auto !important; height: auto !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; image-rendering: pixelated !important; background-color: #000 !important; -webkit-backface-visibility: hidden !important; backface-visibility: hidden !important; } .fullscreen-mode .ejs_virtualGamepad, .fullscreen-mode .ejs_virtualGamepad_button, .fullscreen-mode .ejs_virtualGamepad_touchpad { z-index: 1002 !important; } .hidden { display: none !important; } body.touch-disabled { touch-action: none !important; -ms-touch-action: none !important; overflow: hidden !important; }
+        /* Стили для секции результатов поиска, недавних игр и каталога */
+        #search-results-area { padding-top: 20px; } .search-results-title { font-family: 'Press Start 2P', cursive; font-size: 18px; color: #fff; text-shadow: 1px 1px 0 #000; margin: 0 0 15px 0; text-align: center; } .back-to-main-button { display: block; margin: 20px auto 10px auto; padding: 10px 20px; font-family: 'Press Start 2P', cursive; font-size: 12px; color: #fff; background: linear-gradient(90deg, #555, #333); border: none; border-radius: 8px; cursor: pointer; transition: background 0.3s; text-shadow: 1px 1px 0 #000; } .back-to-main-button:hover { background: linear-gradient(90deg, #666, #444); }
+        /* Адаптивность */
+        @media (min-width: 768px) { .categories { grid-template-columns: repeat(3, 1fr); } .retro-games-grid { grid-template-columns: repeat(4, 1fr); } } @media (max-width: 600px) { .header { flex-direction: column; text-align: center; padding: 15px; } .logo { margin-bottom: 10px; justify-content: center; } .navigation { width: 100%; justify-content: center; } .featured-games { grid-template-columns: 1fr; } .news-content { flex-direction: column; text-align: center; } .news-icon { margin: 0 0 15px 0; } .retro-games-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } } @media (max-width: 480px) { .rom-upload-title, .retro-hits-title { font-size: 14px; } .upload-box { height: 100px; } .upload-text { font-size: 14px; } .search-results-title { font-size: 16px; } } @media (max-width: 360px) { .retro-games-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; } .retro-game-image { max-width: 70px; } .retro-game-title { font-size: 10px; } .retro-game-card { padding: 10px 5px; } .category-title { font-size: 12px; } }
+
+/* === СТИЛИ ДЛЯ СТРАНИЦЫ ИГРЫ === */
+#game-page-area {
+    padding: 20px 15px;
+    background-color: #1e2033; /* Немного другой фон для отличия */
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.game-page-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.game-page-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between; /* Кнопка назад слева, жанр справа */
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.game-page-back-button {
+    background: none;
+    border: none;
+    color: #ff8c00; /* Оранжевый цвет */
+    font-size: 28px; /* Крупнее */
+    cursor: pointer;
+    padding: 5px;
+    line-height: 1;
+    font-weight: bold;
+}
+.game-page-back-button:hover {
+    color: #ffae42; /* Светлее при наведении */
+}
+
+
+.game-page-genre {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 12px;
+    color: #aaa;
+    text-transform: uppercase;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 5px 10px;
+    border-radius: 6px;
+    margin-left: auto; /* Прижимаем вправо */
+}
+
+.game-page-title {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 20px; /* Крупнее */
+    color: #fff;
+    text-shadow: 1px 1px 0 #000;
+    margin: 0 0 20px 0; /* Отступ снизу */
+    line-height: 1.4;
+}
+
+.game-page-logo {
+    width: 70%;           /* Увеличиваем с 60% до 70% */
+    max-width: 250px;     /* Увеличиваем с 200px до 250px */
+    height: auto;
+    object-fit: contain;
+    margin-bottom: 25px;
+    border-radius: 8px;
+    background-color: rgba(0,0,0,0.2);
+    padding: 10px;
+    box-sizing: border-box;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3); /* Добавляем тень для лучшего вида */
+}
+
+.game-page-screenshots {
+    margin-bottom: 25px;
+    width: 100%;
+    text-align: center;
+    color: #aaa;
+    font-style: italic;
+}
+/* Стили для реальных скриншотов (когда добавите)
+.game-page-screenshots img {
+    width: 48%;
+    margin: 1%;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+} */
+
+.game-page-description {
+    color: #ddd;
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 30px;
+    text-align: center; /* Меняем left на center */
+    max-width: 600px; /* Ограничим ширину для читаемости */
+    width: 100%;
+    margin-left: auto; /* Добавляем для лучшего центрирования */
+    margin-right: auto; /* Добавляем для лучшего центрирования */
+}
+
+.game-page-play-button {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 18px;
+    color: #fff;
+    background: linear-gradient(90deg, #ff0080, #ff8c00);
+    border: none;
+    border-radius: 10px;
+    padding: 15px 30px;
+    cursor: pointer;
+    text-shadow: 1px 1px 0 #000;
+    transition: all 0.2s;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+.game-page-play-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 10px rgba(0,0,0,0.4);
+}
+/* === КОНЕЦ СТИЛЕЙ === */
+
+/* === СТИЛИ ДЛЯ СПИСКА ПО АЛФАВИТУ === */
+        #alpha-list-overlay {
+            position: fixed; /* Фиксированное позиционирование поверх всего */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%; /* На весь экран */
+            background-color: rgba(40, 44, 52, 0.97); /* Почти непрозрачный фон */
+            z-index: 1100; /* Выше других элементов интерфейса */
+            padding: 15px;
+            box-sizing: border-box;
+            display: flex; /* Используем flex для внутренней компоновки */
+            flex-direction: column;
+            overscroll-behavior: contain; /* Предотвращаем прокрутку body под оверлеем */
+            /* Изначально скрыт через класс .hidden */
+            transition: opacity 0.3s ease; /* Плавное появление/исчезновение (если убирать/добавлять класс) */
+        }
+
+        /* Стилизация, когда оверлей видим (если используем opacity)
+        #alpha-list-overlay:not(.hidden) {
+            opacity: 1;
+            pointer-events: auto;
+        } */
+
+        .alpha-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-shrink: 0; /* Заголовок не должен сжиматься */
+            border-bottom: 1px solid rgba(255, 140, 0, 0.3); /* Разделитель */
+            padding-bottom: 10px;
+        }
+
+        .alpha-list-title {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 16px; /* Чуть меньше основного заголовка */
+            color: #fff;
+            text-shadow: 1px 1px 0 #000;
+            margin: 0;
+        }
+
+        .alpha-list-close-btn {
+            background: none;
+            border: none;
+            color: #ff8c00; /* Оранжевый, как кнопка Назад */
+            font-size: 32px; /* Крупный крестик */
+            font-weight: bold;
+            cursor: pointer;
+            padding: 0 5px;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .alpha-list-close-btn:hover {
+            color: #ffae42; /* Светлее при наведении */
+        }
+
+        .alpha-list-content {
+            flex-grow: 1; /* Занимает всё оставшееся место */
+            overflow-y: auto; /* Включает вертикальную прокрутку при необходимости */
+            margin-right: -5px; /* Компенсация ширины скроллбара справа */
+            padding-right: 5px; /* Компенсация ширины скроллбара справа */
+             /* Стилизация скроллбара */
+             scrollbar-width: thin; /* Firefox */
+             scrollbar-color: #ff8c00 #555; /* Firefox - цвет ползунка и трека */
+        }
+        /* Стилизация скроллбара для Webkit (Chrome, Safari) */
+        .alpha-list-content::-webkit-scrollbar {
+          width: 8px;
+        }
+        .alpha-list-content::-webkit-scrollbar-track {
+          background: #373b59; /* Фон трека */
+          border-radius: 4px;
+        }
+        .alpha-list-content::-webkit-scrollbar-thumb {
+          background-color: #ff8c00; /* Цвет ползунка */
+          border-radius: 4px;
+          border: 2px solid #373b59; /* Отступ ползунка от краев трека */
+        }
+
+
+        .alpha-list-item {
+            display: block; /* Чтобы занимал всю ширину */
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #eee; /* Светло-серый текст */
+            border: none;
+            border-radius: 8px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 15px;
+            transition: background-color 0.2s, color 0.2s;
+            box-sizing: border-box;
+            font-family: inherit; /* Наследуем шрифт от body */
+            line-height: 1.4;
+        }
+
+        .alpha-list-item:hover {
+            background-color: rgba(255, 140, 0, 0.2); /* Оранжевый фон при наведении */
+            color: #fff; /* Белый текст при наведении */
+        }
+
+        /* Добавляем стиль для класса .hidden, если его еще нет */
+        .hidden {
+            display: none !important;
+        }
+        /* === КОНЕЦ СТИЛЕЙ ДЛЯ СПИСКА ПО АЛФАВИТУ === */
+
+/* Обновляем стили для кнопки избранного - фиксируем положение звезды */
+#game-page-favorite-btn {
+    position: static; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    font-size: 28px;
+    margin: 15px auto;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    border: none;
+    background: rgba(30, 30, 50, 0.3);
+    z-index: 5;
+    cursor: pointer;
+    line-height: 0; /* Важно для центрирования */
+    padding-bottom: 3px; /* Смещаем звезду немного вверх */
+}
+
+/* Стиль для неактивной звезды (добавить в избранное) */
+#game-page-favorite-btn.add-favorite {
+    color: rgba(255, 255, 255, 0.7);
+    background: linear-gradient(45deg, rgba(20, 20, 40, 0.4), rgba(40, 40, 70, 0.5));
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Стиль для активной звезды (уже в избранном) */
+#game-page-favorite-btn.remove-favorite {
+    color: #FFD700; /* Золотой цвет */
+    background: linear-gradient(45deg, rgba(40, 0, 40, 0.3), rgba(80, 40, 0, 0.4));
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Эффекты при наведении */
+#game-page-favorite-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.4);
+}
+
+#game-page-favorite-btn.add-favorite:hover {
+    color: #FFD700;
+    background: linear-gradient(45deg, rgba(30, 0, 30, 0.4), rgba(70, 40, 0, 0.5));
+}
+
+#game-page-favorite-btn.remove-favorite:hover {
+    color: #FFF;
+    background: rgba(180, 0, 0, 0.4);
+}
+
+/* Обновленная структура заголовка страницы игры */
+.game-page-title-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.game-page-title-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.game-page-genre {
+    align-self: flex-end; /* Жанр справа */
+    margin-top: 5px;      /* Отступ от названия */
+    margin-left: auto;    /* Прижимаем жанр вправо */
+}
+
+/* Стиль для звезды избранного в алфавитном списке */
+.alpha-list-item .favorite-indicator {
+    display: inline-block;
+    color: #FFD700; /* Золотой цвет */
+    margin-right: 8px;
+    font-size: 18px;
+    vertical-align: middle;
+    position: relative;
+    top: -1px; /* Небольшое смещение вверх для выравнивания */
+}
+
+</style>
+</head>
+<body>
+    <div class="retro-container" id="retro-container">
+        <div class="header">
+             <div class="logo"> <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cGF0aCBmaWxsPSIjRkYwMDAwIiBkPSJNNTAsMTBjMjIuMSwwLDQwLDE3LjksNDAsNDBTNzIuMSw5MCw1MCw5MFMxMCw3Mi4xLDEwLDUwUzI3LjksMTAsNTAsMTB6Ii8+PHBhdGggZmlsbD0iI0ZGRkZGRiIgZD0iTTM1LDM1aDMwdjMwSDM1VjM1eiIvPjxjaXJjbGUgZmlsbD0iI0ZGRkZGRiIgY3g9IjI1IiBjeT0iMzUiIHI9IjUiLz48Y2lyY2xlIGZpbGw9IiNGRkZGRkYiIGN4PSI3NSIgY3k9IjM1IiByPSI1Ii8+PGNpcmNsZSBmaWxsPSIjRkZGRkZGIiBjeD0iNzUiIGN5PSI2NSIgcj0iNSIvPjxjaXJjbGUgZmlsbD0iI0ZGRkZGRiIgY3g9IjI1IiBjeT0iNjUiIHI9IjUiLz48L3N2Zz4=" alt="Logo" /> <div class="logo-text"> <h1>Dendy</h1> <p>Ретро-эмулятор</p> </div> </div>
+             <div class="navigation"> <button class="nav-button" title="Главная" id="home-nav-button">🏠</button> <button class="nav-button" title="Каталог игр">🎮</button> <button class="nav-button" title="Избранное">⭐</button> </div>
+        </div>
+
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Поиск любимых игр..." />
+            <button class="search-button">🔍</button>
+        </div>
+
+        <div id="main-content">
+            <div class="categories">
+                <div class="category-card" id="top-games-btn"> <div class="category-icon">🏆</div> <h3 class="category-title">ТОП ИГР</h3> </div>
+                <div class="category-card" id="alpha-sort-btn"> <div class="category-icon">🔤</div> <h3 class="category-title">ПО АЛФАВИТУ</h3> </div>
+                <div class="category-card" id="random-btn"> <div class="category-icon">🎲</div> <h3 class="category-title">СЛУЧАЙНАЯ</h3> </div>
+                <div class="category-card" id="popular-btn"> <div class="category-icon">📊</div> <h3 class="category-title">ПОПУЛЯРНЫЕ</h3> </div>
+                <div class="category-card" id="recent-games-btn"> <div class="category-icon">🔄</div> <h3 class="category-title">НЕДАВНИЕ</h3> </div>
+                <div class="category-card" id="share-btn"> <div class="category-icon">📱</div> <h3 class="category-title">ПОДЕЛИТЬСЯ</h3> </div>
+            </div>
+
+            <div class="retro-hits">
+                <h2 class="retro-hits-title">8-BIT ХИТЫ</h2>
+                <div class="retro-games-grid" id="retro-games-grid"></div>
+            </div>
+
+            <div class="rom-upload">
+                <h2 class="rom-upload-title">ЗАГРУЗИТЬ ROM</h2>
+                <div class="upload-box" id="upload-box">
+                    <input type="file" id="fileInput" accept=".nes,.fds,.unif,.unf" class="file-input">
+                    <div class="upload-text"> <strong>Загрузите ROM-файл</strong> Перетащите файл или нажмите здесь </div>
+                </div>
+            </div>
+
+            <div class="featured-games">
+                 <div class="featured-card"> <div class="featured-content"> <h3 class="featured-title">ПРОДОЛЖИТЬ ИГРУ</h3> <img src="data/img/next.png" alt="ПРОДОЛЖИТЬ ИГРУ" class="featured-image"> </div> <button class="arrow-button">➜</button> </div>
+                 <div class="featured-card" id="catalog-btn"> <div class="featured-content"> <h3 class="featured-title">КАТАЛОГ ИГР</h3> <img src="data/img/catalog.png" alt="Dendy каталог" class="featured-image"> </div> <button class="arrow-button">➜</button> </div>
+            </div>
+
+            <div class="news-banner">
+                 <div class="news-content">
+                     <div class="news-icon">📰</div>
+                     <div class="news-text">
+                         <h3 class="news-title">НОВОСТИ И ОБНОВЛЕНИЯ</h3>
+                         <p class="news-description">Следите за обновлениями и новыми играми в нашем канале!</p>
+                     </div>
+                     </div>
+                 <button class="arrow-button">➜</button> </div>
+        </div> 
+        
+        <div id="search-results-area" class="hidden"></div>
+
+        <div id="game-page-area" class="hidden">
+        </div>
+        <div id="display" class="hidden"> <div id="game"></div> </div>
+
+    </div> 
+    <button id="backButton">&#10229;</button>
+    <button id="reloadEmulatorButton">↻</button>
+
+    <div id="orientationMessage"> <button id="startPlayButton">Начать играть</button> <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M17 2H7C5.9 2 5 2.9 5 4v16c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"></path> <path d="M12 18h.01"></path> </svg> <h2 style="margin: 15px 0;">Для лучшего опыта</h2> <p style="font-size: 16px; margin: 0 0 20px 0;">Поверните устройство в горизонтальное положение</p> </div>
+    <div id="loadingState" class="loading-state"> <div class="loading-spinner"></div> <p>Перезагрузка эмулятора...</p> </div>
+    <div id="loadingIndicator" class="loading-indicator"></div>
+
+    <!-- Контейнер для алфавитного списка -->
+    <div id="alpha-list-overlay" class="hidden">
+        <div class="alpha-list-header">
+            <h2 class="alpha-list-title">Поиск по алфавиту</h2>
+            <button class="alpha-list-close-btn" title="Закрыть">&times;</button>
+        </div>
+        <div class="alpha-list-content">
+            <!-- Здесь будет генерироваться список игр по алфавиту -->
+        </div>
+    </div>
+
+    <script>
+
+// Функция для определения папки EJS
+window.EJS_pathtodata = "./data/"; // путь к папке с ядрами
+
+// Функция для работы с избранными играми
+const favoritesManager = {
+    // Получить список избранных игр
+    getFavorites: function() {
+        try {
+            return JSON.parse(localStorage.getItem('favoriteGames') || '[]');
+        } catch (e) {
+            console.error("Ошибка при получении избранных игр:", e);
+            return [];
+        }
+    },
+    
+    // Добавить игру в избранное
+    addToFavorites: function(game) {
+        try {
+            const favorites = this.getFavorites();
+            // Проверяем, нет ли уже такой игры в избранном
+            if (!favorites.some(g => g.id === game.id)) {
+                favorites.push({
+                    id: game.id,
+                    title: game.title,
+                    romUrl: game.romUrl || `roms/catalog/${game.filename}`,
+                    genre: game.genre || 'Неизвестно'
+                });
+                localStorage.setItem('favoriteGames', JSON.stringify(favorites));
+                return true;
+            }
+            return false;
+        } catch (e) {
+            console.error("Ошибка при добавлении в избранное:", e);
+            return false;
+        }
+    },
+    
+    // Удалить игру из избранного
+    removeFromFavorites: function(gameId) {
+        try {
+            let favorites = this.getFavorites();
+            favorites = favorites.filter(g => g.id !== gameId);
+            localStorage.setItem('favoriteGames', JSON.stringify(favorites));
+            return true;
+        } catch (e) {
+            console.error("Ошибка при удалении из избранного:", e);
+            return false;
+        }
+    },
+    
+    // Проверить, находится ли игра в избранном
+    isInFavorites: function(gameId) {
+        try {
+            const favorites = this.getFavorites();
+            return favorites.some(g => g.id === gameId);
+        } catch (e) {
+            console.error("Ошибка при проверке избранного:", e);
+            return false;
+        }
+    }
+};
+
+        const enableDebug = false; const enableThreads = false; const defaultCore = "nes";
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Элементы интерфейса
+const fileInput = document.getElementById('fileInput'); 
+const uploadBox = document.getElementById('upload-box'); 
+const display = document.getElementById('display'); 
+const backButton = document.getElementById('backButton'); 
+const reloadEmulatorButton = document.getElementById('reloadEmulatorButton'); 
+const startPlayButton = document.getElementById('startPlayButton'); 
+const orientationMessage = document.getElementById('orientationMessage'); 
+const loadingState = document.getElementById('loadingState'); 
+const mainContent = document.getElementById('main-content'); 
+const initialRetroGamesGrid = document.getElementById('retro-games-grid'); 
+const searchInput = document.querySelector('.search-input'); 
+const searchButton = document.querySelector('.search-button'); 
+const searchResultsArea = document.getElementById('search-results-area');
+const recentGamesButton = document.getElementById('recent-games-btn'); 
+const homeNavButton = document.getElementById('home-nav-button'); 
+const shareButton = document.getElementById('share-btn');
+const alphaSortButton = document.getElementById('alpha-sort-btn'); 
+const catalogButton = document.getElementById('catalog-btn');
+const popularButton = document.getElementById('popular-btn');
+const randomButton = document.getElementById('random-btn'); // --- СЛУЧАЙНАЯ ИГРА
+const catalogNavButton = document.querySelector('.navigation .nav-button[title="Каталог игр"]');
+            const topGamesButton = document.getElementById('top-games-btn'); // --- ТОП ИГР ---
+
+            // Элементы для алфавитного списка
+            const alphaListOverlay = document.getElementById('alpha-list-overlay');
+            const alphaListContent = alphaListOverlay ? alphaListOverlay.querySelector('.alpha-list-content') : null;
+            const alphaListCloseBtn = alphaListOverlay ? alphaListOverlay.querySelector('.alpha-list-close-btn') : null;
+
+            // Список игр для "8-BIT ХИТЫ"
+            const libraryGames = [
+                { id: "mario", title: "Super Mario Bros", romUrl: "roms/Mario.nes" }, 
+                { id: "contra", title: "Contra", romUrl: "roms/Contra.nes" }, 
+                { id: "battle_city", title: "Battle City", romUrl: "roms/Battle City.nes" }, 
+                { id: "duck_hunt", title: "Duck Hunt", romUrl: "roms/Duck Hunt.nes" }, 
+                { id: "tetris", title: "Tetris", romUrl: "roms/Tetris.nes" }, 
+                { id: "ninja_gaiden", title: "Ninja Gaiden", romUrl: "roms/Ninja Gaiden.nes" }
+            ];
+
+            // --- КАТАЛОГ ИГР ---
+            const generateId = (filename) => { 
+                let namePart = filename.split('.').slice(0, -1).join('.'); 
+                return namePart.toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_'); 
+            };
+
+            const gameDetailsData = {
+   
+  "Super Mario Bros": { 
+        genre: "Платформер", 
+        description: "Классика платформеров. Помоги Марио спасти принцессу, преодолевая врагов и ловушки в волшебном мире." 
+    },
+    "Contra": { 
+        genre: "Экшен", 
+        description: "Взрывной боевик. Пройди огонь и воду в роли элитного бойца, сражаясь с пришельцами и роботами." 
+    },
+    "Battle City": { 
+        genre: "Аркада", 
+        description: "Защити свою базу. Управляй танком, уничтожай врагов и строй укрепления на пути к победе." 
+    },
+    "Duck Hunt": { 
+        genre: "Шутер (Light Gun)", 
+        description: "Охота начинается. Прицелься и стреляй по уткам с помощью светового пистолета." 
+    },
+    "Tetris": { 
+        genre: "Пазл", 
+        description: "Головоломка на века. Составляй линии из падающих фигур и не дай экрану заполниться." 
+    },
+    "Ninja Gaiden": { 
+        genre: "Платформер/Экшен", 
+        description: "Стань тенью. Управляй ниндзя Рю и побеждай врагов в насыщенном экшен-платформере с сюжетом." 
+    },
+
+ // --- Экшен (Action) ---
+    "Teenage Mutant Ninja Turtles III: The Manhattan Project": { genre: "Экшен", description: "Черепахи снова в деле! Спаси Нью-Йорк от злодея Шреддера и его армии. Игра для одного или двух игроков с динамичным геймплеем, разнообразными врагами и боссами." },
+    "Battletoads & Double Dragon: The Ultimate Team": { genre: "Экшен", description: "Крутой кроссовер легендарных героев! Сражайся против космических злодеев, используя мощные удары и комбо. Превосходный геймплей и яркая графика." },
+    "Battletoads (Русская версия)": { genre: "Экшен", description: "Знаменитые боевые жабы идут на бой со злом! Экшен с разнообразными уровнями, сложными противниками и напряжённым геймплеем. Идеальна для игры вдвоём." },
+    "Bucky O'Hare": { genre: "Экшен", description: "Космический кролик Баки и его команда в опасном приключении! Сложные уровни, разнообразные герои и захватывающий сюжет делают игру культовой." },
+    "Captain America and the Avengers": { genre: "Экшен", description: "Присоединяйся к команде Мстителей и спаси мир от суперзлодеев. Игра с множеством персонажей и активным экшеном." },
+    "Contra Force": { genre: "Экшен", description: "Знаменитая серия Contra возвращается! Уничтожай врагов, используй разные виды оружия и координируй действия команды бойцов." },
+    "Jackal": { genre: "Экшен", description: "Военный экшен, где ты управляешь джипом и спасаешь заложников. Множество врагов и непростые миссии делают игру увлекательной и динамичной." },
+    "Monster in My Pocket": { genre: "Экшен", description: "Сражения миниатюрных монстров в обычном доме! Динамичный экшен с яркой графикой и разнообразием уровней." },
+    "RoboCop": { genre: "Экшен", description: "Знаменитый робот-полицейский борется с преступностью. Суровые сражения, жестокие враги и увлекательные уровни." },
+    "RoboCop 2": { genre: "Экшен", description: "Продолжение борьбы Робокопа с преступностью. Новые враги и уровни." },
+    "RoboCop 3": { genre: "Экшен", description: "Робокоп снова на страже закона. Третья часть саги с улучшенной графикой и геймплеем." },
+    "Shadow of the Ninja": { genre: "Экшен", description: "Экшен о бесстрашных ниндзя, сражающихся против сил зла. Отличная графика, плавный геймплей и захватывающие уровни." },
+    "Silkworm": { genre: "Экшен", description: "Динамичный экшен с вертолётом и джипом, сражающимися против бесчисленных противников. Кооперативный режим для двух игроков." },
+    "Super C (Super Contra)": { genre: "Экшен", description: "Продолжение знаменитой Contra с ещё большим количеством врагов, оружия и эпичных боссов." },
+    "Tokkyuu Shirei Solbrain": { genre: "Экшен", description: "Японский супергерой спасает город от злодеев. Классический экшен в лучших традициях японских боевиков." },
+    "S.C.A.T.: Special Cybernetic Attack Team": { genre: "Экшен", description: "Летающий экшен-платформер (Final Mission)." }, // Соответствует Final Mission.nes
+    "Alien 3": { genre: "Экшен", description: "Экшен-платформер по мотивам фильма Чужой 3. Сложные лабиринты и опасные ксеноморфы."},
+
+    // --- Приключения (Adventure) ---
+    "Adventure Island": { genre: "Приключения", description: "Весёлые приключения парня в шапочке, сражающегося с монстрами на острове. Простое управление, много уровней и яркая графика." },
+    "Adventure Island II": { genre: "Приключения", description: "Продолжение приключений на острове с новыми динозаврами-помощниками." },
+    "Adventure Island III": { genre: "Приключения", description: "Третья часть с ещё большим разнообразием уровней и врагов." },
+    "Adventure Island IV": { genre: "Приключения", description: "Четвёртая часть, выпущенная только в Японии, с элементами RPG." },
+    "Chip 'n Dale: Rescue Rangers (Русская версия)": { genre: "Приключения", description: "Чип и Дейл в захватывающих приключениях! Увлекательный геймплей, командная игра и много секретов на уровнях." },
+    "Chip 'n Dale: Rescue Rangers 2 (Русская версия от Shedevr)": { genre: "Приключения", description: "Вторая часть приключений спасателей с новыми уровнями и возможностями." },
+    "Darkwing Duck": { genre: "Приключения", description: "Чёрный плащ выходит на защиту города от преступников. Яркие персонажи, оригинальные уровни и удобное управление." },
+    "Duck Tales": { genre: "Приключения", description: "Дядюшка Скрудж и охота за сокровищами по всему миру. Красивые уровни, увлекательные задания и множество секретов." }, // Добавлено для onlain-igrok.rf_23573.nes
+    "DuckTales 2": { genre: "Приключения", description: "Продолжение охоты Скруджа за сокровищами с новыми локациями." },
+    "Felix the Cat": { genre: "Приключения", description: "Весёлое приключение легендарного кота. Используй разные способности Феликса, чтобы пройти через все уровни." },
+    "Prince of Persia (Русская версия)": { genre: "Приключения", description: "Легендарное приключение принца, полный ловушек и опасностей. Отличается реалистичной анимацией и сложными загадками." },
+    "TaleSpin": { genre: "Приключения", description: "Баллу и его воздушные приключения. Полёты, сражения и интересные миссии в мире мультсериала." },
+    "The Flintstones: The Rescue of Dino & Hoppy": { genre: "Приключения", description: "Флинстоуны в доисторических приключениях. Весёлые персонажи, интересные головоломки и уровни." },
+    "The Flintstones: Surprise at Dinosaur Peak": { genre: "Приключения", description: "Вторая часть приключений Флинстоунов с новыми заданиями." },
+    "Tiny Toon Adventures": { genre: "Приключения", description: "Забавные мультгерои Tiny Toon в весёлых приключениях. Яркий мир, разнообразные уровни и простое управление." },
+    "Tiny Toon Adventures 2: Trouble in Wackyland": { genre: "Приключения", description: "Продолжение приключений Tiny Toon в парке развлечений Wackyland." },
+    "Tom and Jerry (Русская версия)": { genre: "Приключения", description: "Весёлое противостояние Тома и Джерри. Пройдите все уровни, избегая ловушек и врагов." },
+
+    // --- Платформеры и Экшен-платформеры ---
+    "Batman": { genre: "Платформер/Экшен", description: "Готэм в опасности! Управляй Бэтменом, проходи сложные уровни и сражайся с культовыми злодеями." },
+    "Batman Returns": { genre: "Платформер/Экшен", description: "Битва Бэтмена против Пингвина и Женщины-кошки по мотивам фильма." },
+    "Castlevania": { genre: "Платформер/Экшен", description: "Легендарные приключения семьи Бельмонтов, сражающихся с Дракулой. Мрачная атмосфера, сложные уровни и культовый саундтрек." },
+    "Castlevania II: Simon's Quest": { genre: "Платформер/Экшен", description: "Продолжение с элементами RPG и исследованием мира." },
+    "Castlevania III: Dracula's Curse": { genre: "Платформер/Экшен", description: "Приквел с возможностью выбора персонажей и нелинейными маршрутами." },
+    "Mega Man": { genre: "Платформер/Экшен", description: "Серия игр про отважного робота. Сражайся с боссами, улучшай оружие и проходи захватывающие уровни." },
+    "Mega Man 2": { genre: "Платформер/Экшен", description: "Вторая часть приключений Мегамена с новыми боссами и способностями." },
+    "Mega Man 3": { genre: "Платформер/Экшен", description: "Мегамен 3 представляет Раша - верного пса-помощника." },
+    "Mega Man 4": { genre: "Платформер/Экшен", description: "Новый злодей и возможность заряжать выстрел Мега Бастера." },
+    "Mega Man 5": { genre: "Платформер/Экшен", description: "Брат Мегамена - Протомен - похищает доктора Лайта." },
+    "Mega Man 6": { genre: "Платформер/Экшен", description: "Мегамен получает новые адаптеры Раша для полёта и мощного удара." },
+    "Teenage Mutant Ninja Turtles (Русская версия)": { genre: "Платформер/Экшен", description: "Первая игра про черепашек на NES. Сложный платформер с видом сбоку и сверху." },
+    "Teenage Mutant Ninja Turtles II: The Arcade Game": { genre: "Платформер/Экшен", description: "Порт аркадной игры в жанре Beat 'em up. Сражайся с кланом Фут вдвоём!" },
+    "Teenage Mutant Ninja Turtles: Tournament Fighters": { genre: "Файтинг", description: "Файтинг во вселенной черепашек-ниндзя с разными бойцами и аренами." }, // Перенес в Файтинг
+    "Super Mario Bros.": { genre: "Платформер", description: "Легендарный платформер, спасший индустрию видеоигр." }, // Для игры из libraryGames
+    "Super Mario Bros. 2 (Русская версия)": { genre: "Платформер", description: "Необычная часть серии с выбором персонажей и уникальной механикой выдергивания овощей." },
+    "Super Mario Bros. 3 (Русская версия от 2R Team)": { genre: "Платформер", description: "Одна из лучших игр на NES. Огромный мир, множество бонусов и секретов." },
+    "Mario Bros.": { genre: "Аркада", description: "Классическая аркада, где Марио и Луиджи сражаются с вредителями в канализации." }, // Перенес в Аркады
+
+    // --- Ролевые игры (RPG) ---
+    "Final Fantasy": { genre: "RPG", description: "Культовая серия ролевых игр с глубоким сюжетом, множеством персонажей и увлекательной системой боя." },
+    "Final Fantasy II": { genre: "RPG", description: "Вторая часть с уникальной системой прокачки, зависящей от действий персонажей." },
+    "Final Fantasy III": { genre: "RPG", description: "Третья часть с развитой системой профессий (джоб)." },
+
+    // --- Файтинги (Fighting) ---
+    "Best of the Best: Championship Karate": { genre: "Файтинг", description: "Карате-чемпионат, где ты проходишь путь от новичка до чемпиона. Множество техник и реалистичные бои." },
+    "Mighty Final Fight": { genre: "Файтинг", description: "Чиби-версия знаменитого Beat 'em up Final Fight с элементами прокачки." }, // Добавил жанр и описание
+    "Double Dragon": { genre: "Файтинг", description: "Классический Beat 'em up. Братья Билли и Джимми Ли спасают Мэриан." }, // Добавил жанр и описание
+    "Double Dragon II: The Revenge": { genre: "Файтинг", description: "Продолжение Beat 'em up с новыми приёмами и улучшенной графикой." }, // Добавил жанр и описание
+    "Double Dragon III: The Sacred Stones": { genre: "Файтинг", description: "Третья часть Beat 'em up с возможностью покупки предметов и новыми бойцами." }, // Добавил жанр и описание
+
+    // --- Аркады и пазлы (Arcade, Puzzle) ---
+    "Battle City": { genre: "Аркада", description: "Легендарная танковая баталия. Защищай базу, прокачивай танк и играй с другом." }, // Также для 487_Tank_1990.nes
+    "Bomberman": { genre: "Аркада/Пазл", description: "Подрывай стены, уничтожай врагов и найди выход из лабиринта. Захватывающая аркада для одного и нескольких игроков." },
+    "Bomberman II": { genre: "Аркада/Пазл", description: "Продолжение Bomberman с новыми режимами, включая мультиплеер." },
+    "Dr. Mario (Русская версия от Multisoft)": { genre: "Пазл", description: "Затягивающая головоломка с участием Марио, где нужно очищать экран от вирусов." },
+    "Pac-Man": { genre: "Аркада", description: "Классическая аркада, где нужно съесть все точки и избежать призраков." },
+    "Lode Runner (Русская версия от Multisoft)": { genre: "Аркада/Пазл", description: "Умная аркада, где нужно собрать золото, избегая врагов и ловушек." },
+    "Tetris": { genre: "Пазл", description: "Легендарная головоломка со складыванием падающих фигур." }, // Для игры из libraryGames
+
+    // --- Спорт (Sport) ---
+    "Blades of Steel": { genre: "Спорт", description: "Динамичный хоккей с драками и напряженными матчами."}, // Добавил
+
+    // --- Другое (Other/Misc) ---
+    "Duck Hunt": { genre: "Шутер (Light Gun)", description: "Классический шутер для светового пистолета. Стреляй по уткам!"}, // Для игры из libraryGames
+    "Ninja Gaiden": { genre: "Платформер/Экшен", description: "Сложный и стильный экшен-платформер про ниндзя Рю Хаябусу."}, // Для игры из libraryGames
+    "Contra": { genre: "Экшен", description: "Легендарный Run and gun шутер. Сражайся с пришельцами в одиночку или с другом."}, // Для игры из libraryGames
+    "Неизвестная игра (пиратская сборка)": { genre: "Неизвестно", description: "Пиратская сборка игры. Содержимое может быть непредсказуемым." } // Для onlain-igrok.rf_23573.nes (старое название)
+
+};
+            
+            const fullCatalogGames = [ 
+                { filename: "teenage-manhattan.nes", title: "Teenage Mutant Ninja Turtles III: The Manhattan Project" }, 
+                { filename: "487_Tank_1990.nes", title: "Battle City" }, 
+                { filename: "adventure_islan.nes", title: "Adventure Island" }, 
+                { filename: "adventure_islan2.nes", title: "Adventure Island II" }, 
+                { filename: "adventure_islan3.nes", title: "Adventure Island III" }, 
+                { filename: "adventure_islan4.nes", title: "Adventure Island IV" }, 
+                { filename: "Alien 3.nes", title: "Alien 3" }, 
+                { filename: "Batman Returns.nes", title: "Batman Returns" }, 
+                { filename: "Batman.nes", title: "Batman" }, 
+                { filename: "Battletoads and Double Dragon.nes", title: "BattletoadsDoubleDragon" }, 
+                { filename: "battletoads-rus_onlain-igrok.rf_.nes", title: "Battletoadsrus" }, 
+                { filename: "Best of the Best - Championship Karate.nes", title: "BBCKarate" }, 
+                { filename: "Blades_of_Steel.nes", title: "BladesofSteel" }, 
+                { filename: "Bomberman (U) [T-Rus] [!].nes", title: "Bomberman" }, 
+                { filename: "Bomberman2.nes", title: "Bomberman II" }, 
+                { filename: "Bucky O'Hare.nes", title: "BuckyOHare" }, 
+                { filename: "Captain America and the Avengers.nes", title: "CaptainAmerica" }, 
+                { filename: "Castlevania 2 Simon's Quest.nes", title: "Castlevania II: Simon's Quest" }, 
+                { filename: "Castlevania 3 - Dracula's Curse.nes", title: "Castlevania III: Dracula's Curse" }, 
+                { filename: "Castlevania.nes", title: "Castlevania" }, 
+                { filename: "Chip n Dale Rescue Rangers 2 (U) [T-Rus] [!] by Shedevr.nes", title: "Chip 'n Dale: Rescue Rangers 2 (Русская версия от Shedevr)" }, 
+                { filename: "chip-n-dale-rescue-rangers-[rus].nes", title: "Chip 'n Dale: Rescue Rangers (Русская версия)" }, 
+                { filename: "Contra Force.nes", title: "Contra Force" }, 
+                { filename: "Darkwing_Duck-U-.nes", title: "Darkwing Duck" }, 
+                { filename: "Double Dragon II - The Revenge.nes", title: "Double Dragon II: The Revenge" }, 
+                { filename: "Double Dragon III - The Sacred Stones.nes", title: "Double Dragon III: The Sacred Stones" }, 
+                { filename: "Double Dragon.nes", title: "Double Dragon" }, 
+                { filename: "Dr. Mario (U) [!p] [T-Rus] by Multisoft.nes", title: "Dr. Mario (Русская версия от Multisoft)" }, 
+                { filename: "onlain-igrok.rf_23573.nes", title: "Duck Tales" },                 
+                { filename: "Duck Tales 2.nes", title: "DuckTales 2" }, 
+                { filename: "Felix the Cat.nes", title: "Felix the Cat" }, 
+                { filename: "Final Fantasy 2.nes", title: "Final Fantasy II" }, 
+                { filename: "Final Fantasy 3.nes", title: "Final Fantasy III" }, 
+                { filename: "Final Fantasy.nes", title: "Final Fantasy" }, 
+                { filename: "Final Mission.nes", title: "S.C.A.T.: Special Cybernetic Attack Team" }, 
+                { filename: "Jackal.nes", title: "Jackal" }, 
+                { filename: "Lode Runner (U) [T-Rus] by Multisoft.nes", title: "Lode Runner (Русская версия от Multisoft)" }, 
+                { filename: "Mario Bros.nes", title: "Mario Bros." }, 
+                { filename: "Mega Man5.nes", title: "Mega Man 5" }, 
+                { filename: "Megaman6.nes", title: "Mega Man 6" }, 
+                { filename: "Mega_Man.nes", title: "Mega Man" }, 
+                { filename: "Mega_Man2.nes", title: "Mega Man 2" }, 
+                { filename: "Mega_Man3.nes", title: "Mega Man 3" }, 
+                { filename: "Mega_Man4.nes", title: "Mega Man 4" }, 
+                { filename: "Mighty Final Fight.nes", title: "Mighty Final Fight" }, 
+                { filename: "Monster In My Pocket.nes", title: "Monster in My Pocket" }, 
+                { filename: "Pac-Man.nes", title: "Pac-Man" }, 
+                { filename: "prince-of-persia-rus_onlain-igrok.rf_.nes", title: "Prince of Persia (Русская версия)" }, 
+                { filename: "Robocop-2.nes", title: "RoboCop 2" }, 
+                { filename: "Robocop-3.nes", title: "RoboCop 3" }, 
+                { filename: "RoboCop.nes", title: "RoboCop" }, 
+                { filename: "shadow of the ninja.nes", title: "Shadow of the Ninja" }, 
+                { filename: "Silkworm.nes", title: "Silkworm" }, 
+                { filename: "Super Contra.nes", title: "Super C (Super Contra)" }, 
+                { filename: "super-mario-bros.-2-rus.nes", title: "Super Mario Bros. 2 (Русская версия)" }, 
+                { filename: "super-mario-bros.-3-e-t-rus-by-2r-team-2r-team.nes", title: "Super Mario Bros. 3 (Русская версия от 2R Team)" }, 
+                { filename: "TaleSpin.nes", title: "TaleSpin" }, 
+                { filename: "teenage-mutant-ninja-turtles-ii-the-arcade-game.nes", title: "Teenage Mutant Ninja Turtles II: The Arcade Game" }, 
+                { filename: "teenage-mutant-ninja-turtles-rus.nes", title: "Teenage Mutant Ninja Turtles (Русская версия)" }, 
+                { filename: "teenage-mutant-ninja-turtles-tournament-fighters.nes", title: "Teenage Mutant Ninja Turtles: Tournament Fighters" }, 
+                { filename: "The Flintstones - The Rescue of Dino & Hoppy.nes", title: "The Flintstones: The Rescue of Dino & Hoppy" }, 
+                { filename: "The Flintstones 2 - The Surprise at Dinosaur Peak.nes", title: "The Flintstones: Surprise at Dinosaur Peak" }, 
+                { filename: "Tiny Toon Adventures 2.nes", title: "Tiny Toon Adventures 2: Trouble in Wackyland" }, 
+                { filename: "Tiny_Toon_Adventures-U-.nes", title: "Tiny Toon Adventures" }, 
+                { filename: "Tokkyuu Shirei - Solbrain.nes", title: "Tokkyuu Shirei Solbrain" }, 
+                { filename: "tom-jerry-u-p1trus_onlain-igrok.rf_.nes", title: "Tom and Jerry (Русская версия)" } 
+            ].map(game => ({ ...game, id: generateId(game.filename) }));
+
+
+// Теперь обогащаем fullCatalogGames
+const enrichedFullCatalogGames = fullCatalogGames.map(game => {
+    const details = gameDetailsData[game.title] || gameDetailsData[game.title.replace(" (Русская версия)", "")] || {}; // Пытаемся найти по точному названию или без "(Русская версия)"
+    // Особый случай для Battle City / Tank 1990
+    if (game.id === '487_tank_1990') {
+        const detailsBC = gameDetailsData["Battle City"];
+        return {
+            ...game,
+            genre: detailsBC?.genre || 'Аркада',
+            description: detailsBC?.description || 'Легендарная танковая баталия.'
+        };
+    }
+     // Особый случай для S.C.A.T. / Final Mission
+    if (game.id === 'final_mission') {
+        const detailsSCAT = gameDetailsData["S.C.A.T.: Special Cybernetic Attack Team"];
+        return {
+            ...game,
+            genre: detailsSCAT?.genre || 'Экшен',
+            description: detailsSCAT?.description || 'Летающий экшен-платформер.'
+        };
+    }
+    // Особый случай для Super C / Super Contra
+    if (game.id === 'super_contra') {
+        const detailsSuperC = gameDetailsData["Super C (Super Contra)"];
+        return {
+            ...game,
+            genre: detailsSuperC?.genre || 'Экшен',
+            description: detailsSuperC?.description || 'Продолжение знаменитой Contra.'
+        };
+    }
+
+    return {
+        ...game,
+        genre: details.genre || 'Неизвестно',
+        description: details.description || 'Описание для этой игры пока не добавлено.'
+    };
+});
+
+// Заменяем старый массив на новый, обогащенный
+window.fullCatalogGames = enrichedFullCatalogGames;
+
+// --- КОНЕЦ ДОБАВЛЕНИЯ ДАННЫХ ---
+
+// Список игр для "8-BIT ХИТЫ" - тоже обогатим на всякий случай
+const enrichedLibraryGames = libraryGames.map(game => {
+    const details = gameDetailsData[game.title] || {};
+     return {
+        ...game,
+        genre: details.genre || 'Неизвестно',
+        description: details.description || 'Описание для этой игры пока не добавлено.'
+     };
+});
+window.libraryGames = enrichedLibraryGames; // Обновляем глобально, если используется где-то еще
+
+// --- КОНЕЦ ОБОГАЩЕНИЯ libraryGames ---
+
+
+
+            // Функция для получения полного объекта игры (из хитов или каталога) по ID
+            const findGameDataById = (id) => libraryGames.find(g => g.id === id) || fullCatalogGames.find(g => g.id === id);
+
+            // --- ПОПУЛЯРНЫЕ ИГРЫ (Обновлено) ---
+            const popularGameIds = [ 
+                'battletoads_and_double_dragon', 
+                'teenage-manhattan',
+                'tiny_toon_adventures_u_', 
+                'chip_n_dale_rescue_rangers_rus_', 
+                'dr_mario_u_p_t_rus_by_multisoft', 
+                'mega_man', 
+                'pac_man' 
+            ];
+            const popularGamesList = popularGameIds.map(findGameDataById)
+                                                 .filter(Boolean) // Убираем ненайденные
+                                                 // Добавляем romUrl для игр из каталога
+                                                 .map(g => ({ ...g, romUrl: g.romUrl || `roms/catalog/${g.filename}` }));
+
+            // --- ТОП ИГР ---
+            const topGameIds = [ 
+                'battletoads_and_double_dragon', 
+                'chip_n_dale_rescue_rangers_rus_', 
+                'felix_the_cat', 
+                'mario_bros', 
+                '487_tank_1990', 
+                'teenage_mutant_ninja_turtles_rus', 
+                'teenage_mutant_ninja_turtles_ii_the_arcade_game', 
+                'tom_jerry_u_p1trus_onlain_igrok_rf_', 
+                'robocop' 
+            ];
+            const topGamesList = topGameIds.map(findGameDataById)
+                                           .filter(Boolean)
+                                           .map(g => ({ ...g, romUrl: g.romUrl || `roms/catalog/${g.filename}` }));
+
+
+            window.orientationShown = false; 
+            window.currentRomUrl = null; 
+            window.currentGameName = null; 
+            window.isEmulatorActive = false;
+
+            const imageMap = { 
+    "teenage_manhattan": "manhattan.webp",
+    "487_tank_1990": "battlecity.webp",
+    "adventure_islan": "adventure_island1.webp",
+    "adventure_islan2": "adventure_islan2.webp",
+    "adventure_islan3": "adventure_islan3.webp",
+    "adventure_islan4": "adventure_islan4.webp",
+    "alien_3": "Alien 3.webp",
+    "batman_returns": "Batman Returns.webp",
+    "batman": "Batman.webp",
+    "battletoads_and_double_dragon": "BattletoadsDoubleDragon.webp",
+    "battletoads_rus_onlain_igrok_rf_": "Battletoadsrus.webp",
+    "best_of_the_best_championship_karate": "BBCKarate.webp",
+    "blades_of_steel": "BladesofSteel.webp",
+    "bomberman_u_t_rus_": "Bomberman.webp",
+    "bomberman2": "Bomberman2.webp",
+    "bucky_o_hare": "BuckyOHare.webp",
+    "captain_america_and_the_avengers": "CaptainAmerica.webp",
+    "castlevania_2_simon_s_quest": "Castlevania2.webp",
+    "castlevania_3_dracula_s_curse": "Castlevania3.webp",
+    "castlevania": "Castlevania.webp",
+    "chip_n_dale_rescue_rangers_2_u_t_rus_by_shedevr": "Chip2.webp",
+    "chip_n_dale_rescue_rangers_rus_": "chipr.webp",
+    "contra_force": "contra_force.webp",
+    "darkwing_duck_u_": "darkwing_duck_u.webp",
+    "double_dragon_ii_the_revenge": "double_dragon_revenge.webp",
+    "double_dragon_iii_the_sacred_stones": "DoubleDragonSacred.webp",
+    "double_dragon": "DoubleDragon.webp",
+    "dr_mario_u_p_t_rus_by_multisoft": "dr_mario.webp",
+    "onlain_igrok_rf_23573": "dt2.webp",
+    "duck_tales_2": "DuckTales2.webp",
+    "felix_the_cat": "felix_the_cat.webp",
+    "final_fantasy_2": "final_fantasy_2.webp",
+    "final_fantasy_3": "final_fantasy_3.webp",
+    "final_fantasy": "final_fantasy.webp",
+    "final_mission": "final_mission.webp",
+    "jackal": "Jackal.webp",
+    "lode_runner_u_t_rus_by_multisoft": "lode_runner.webp",
+    "mario_bros": "mario_bros.webp",
+    "mega_man5": "mega_man5.webp",
+    "megaman6": "megaman6.webp",
+    "mega_man": "mega_man.webp",
+    "mega_man2": "Mega_Man2.webp",
+    "mega_man3": "Mega_Man3.webp",
+    "mega_man4": "Mega_Man4.webp",
+    "mighty_final_fight": "mighty_final_fight.webp",
+    "monster_in_my_pocket": "monster_in_my_pocket.webp",
+    "pac_man": "pac_man.webp",
+    "prince_of_persia_rus_onlain_igrok_rf_": "prince_of_persia.webp",
+    "robocop_2": "robocop_2.webp",
+    "robocop_3": "robocop_3.webp",
+    "robocop": "robocop.webp",
+    "shadow_of_the_ninja": "shadow_of_the_ninja.webp",
+    "silkworm": "silkworm.webp",
+    "super_contra": "super_contra.webp",
+    "super_mario_bros_2_rus": "super_mario_bros_2_rus.webp",
+    "super_mario_bros_3_e_t_rus_by_2r_team_2r_team": "super_mario_bros_3.webp",
+    "talespin": "talespin.webp",
+    "teenage_mutant_ninja_turtles_ii_the_arcade_game": "teenagemutantarcade.webp",
+    "teenage_mutant_ninja_turtles_rus": "teenagemutant.webp",
+    "teenage_mutant_ninja_turtles_tournament_fighters": "teenagemutantfighters.webp",
+    "the_flintstones_the_rescue_of_dino_hoppy": "Flintstones.webp",
+    "the_flintstones_2_the_surprise_at_dinosaur_peak": "Flintstones2.webp",
+    "tiny_toon_adventures_2": "tiny_toon_adventures_2.webp",
+    "tiny_toon_adventures_u_": "tiny_toon_adventures.webp",
+    "tokkyuu_shirei_solbrain": "tokkyuu_shirei_solbrain.webp",
+    "tom_jerry_u_p1trus_onlain_igrok_rf_": "tom_jerry.webp",
+
+                "487_tank_1990": "battlecity.webp",
+                "mario": "mario.webp", 
+                "contra": "contra.webp", 
+                "battle_city": "battlecity.webp", 
+                "duck_hunt": "duckhunt.webp", 
+                "tetris": "tetris.webp", 
+                "ninja_gaiden": "ninja.webp" 
+            
+};
+            const imgBasePath = "data/img/games/"; 
+            const catalogImgBasePath = "data/img/catalog/";
+
+            // Функция отрисовки сетки "8-BIT ХИТЫ" / Поиска / Недавних / Популярных / ТОП
+function renderGamesGrid(gamesToRender, targetGridElement) {
+    targetGridElement.innerHTML = '';
+    if (!gamesToRender || gamesToRender.length === 0) { 
+        targetGridElement.innerHTML = '<p style="color: #aaa; grid-column: 1 / -1; text-align: center; margin-top: 20px;">Игры не найдены.</p>'; 
+        return; 
+    }
+    gamesToRender.forEach(game => {
+        if (!game || !game.id || !game.title || !game.romUrl) { 
+            console.warn("Пропуск игры (renderGamesGrid) с неполными данными:", game); 
+            return; 
+        }
+        const gameCard = document.createElement('div'); 
+        gameCard.className = 'retro-game-card';
+        // Пытаемся найти картинку в основной папке, потом в каталоге
+        let imagePath = imageMap[game.id] ? (imgBasePath + imageMap[game.id]) : (catalogImgBasePath + game.id + '.webp');
+        
+        // Проверяем, находится ли игра в избранном
+        const isInFavorites = favoritesManager.isInFavorites(game.id);
+        const favoriteButtonClass = isInFavorites ? 'remove-favorite' : 'add-favorite';
+        const favoriteButtonText = isInFavorites ? '★' : '☆';
+        
+        // Добавляем кнопку избранного в разметку
+        gameCard.innerHTML = `
+            <div class="favorite-button ${favoriteButtonClass}" data-game-id="${game.id}">${favoriteButtonText}</div>
+            <img src="${imagePath}" alt="${game.title}" class="retro-game-image" onerror="this.onerror=null; this.src='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';">
+            <div class="retro-game-title">${game.title}</div>
+        `;
+        
+        // Изменяем обработчик клика - открываем страницу с описанием вместо прямого запуска
+        gameCard.addEventListener('click', (e) => {
+            // Если клик был по кнопке избранного, обрабатываем отдельно
+            if (e.target.classList.contains('favorite-button') || e.target.closest('.favorite-button')) {
+                return;
+            }
+            showGamePage(game); // Вместо loadGameFromUrl теперь вызываем showGamePage
+        });
+        
+        // Добавляем обработчик для кнопки избранного
+        const favoriteButton = gameCard.querySelector('.favorite-button');
+        if (favoriteButton) {
+            favoriteButton.addEventListener('click', (e) => {
+                e.stopPropagation(); // Предотвращаем запуск игры
+                
+                const gameId = e.target.dataset.gameId;
+                
+                if (favoritesManager.isInFavorites(gameId)) {
+                    // Удаляем из избранного
+                    if (favoritesManager.removeFromFavorites(gameId)) {
+                        e.target.classList.remove('remove-favorite');
+                        e.target.classList.add('add-favorite');
+                        e.target.textContent = '☆';
+                    }
+                } else {
+                    // Добавляем в избранное
+                    if (favoritesManager.addToFavorites(game)) {
+                        e.target.classList.remove('add-favorite');
+                        e.target.classList.add('remove-favorite');
+                        e.target.textContent = '★';
+                    }
+                }
+            });
+        }
+        
+        targetGridElement.appendChild(gameCard);
+    });
+}
+
+            // ИСПРАВЛЕННАЯ ФУНКЦИЯ ОТРИСОВКИ КАТАЛОГА
+            function showGamePage(game) {
+    const gamePageArea = document.getElementById('game-page-area');
+    if (!game || !gamePageArea) {
+        console.error("Не удалось отобразить страницу игры:", game);
+        return;
+    }
+
+    // Находим полные данные игры (сначала проверяем в хитах, потом в каталоге)
+    let fullGameData = window.libraryGames.find(g => g.id === game.id);
+    if (!fullGameData) {
+        fullGameData = window.fullCatalogGames.find(g => g.id === game.id);
+    }
+    
+    // Если не нашли данные игры ни в одном из списков, используем переданный объект
+    if (!fullGameData) {
+        fullGameData = game;
+    }
+
+    // Определяем путь к ROM-файлу
+    const romPath = fullGameData.romUrl || `roms/catalog/${fullGameData.filename}`;
+    
+    // Проверяем наличие специального логотипа в imageMap
+    let imagePath;
+    if (imageMap[fullGameData.id]) {
+        // Если есть в специальных логотипах, используем его
+        imagePath = imgBasePath + imageMap[fullGameData.id];
+    } else {
+        // Иначе используем из каталога
+        imagePath = `${catalogImgBasePath}${fullGameData.id}.webp`;
+    }
+
+    // Проверяем, находится ли игра в избранном
+    const isInFavorites = favoritesManager.isInFavorites(fullGameData.id);
+    const favoriteButtonClass = isInFavorites ? 'remove-favorite' : 'add-favorite';
+    const favoriteButtonText = isInFavorites ? '★' : '☆';
+
+    // Обновленная HTML-структура с переносом кнопки избранного
+    gamePageArea.innerHTML = `
+        <div class="game-page-container">
+            <div class="game-page-header">
+                <button class="game-page-back-button" id="game-page-back-btn" title="Назад">&#10094;</button>
+                <span class="game-page-genre">${fullGameData.genre || 'Неизвестно'}</span>
+            </div>
+            
+            <div class="game-page-title-container">
+                <h2 class="game-page-title">${fullGameData.title}</h2>
+                <div class="favorite-button ${favoriteButtonClass}" id="game-page-favorite-btn" data-game-id="${fullGameData.id}">${favoriteButtonText}</div>
+            </div>
+            
+            <img src="${imagePath}" alt="${fullGameData.title}" class="game-page-logo" onerror="this.onerror=null; this.style.display='none';">
+            
+            <div class="game-page-screenshots">
+                <p>(Здесь будут скриншоты)</p>
+            </div>
+            
+            <div class="game-page-description">
+                ${fullGameData.description || 'Описание не найдено.'}
+            </div>
+            
+            <button class="game-page-play-button" id="game-page-play-btn">ИГРАТЬ</button>
+        </div>
+    `;
+
+    // Добавляем обработчики для новых кнопок
+    const playButton = gamePageArea.querySelector('#game-page-play-btn');
+    const backCatalogButton = gamePageArea.querySelector('#game-page-back-btn');
+    const favoriteButton = gamePageArea.querySelector('#game-page-favorite-btn');
+
+    if (playButton) {
+        playButton.onclick = () => {
+             gamePageArea.classList.add('hidden'); // Скрываем страницу игры
+             loadGameFromUrl(romPath, fullGameData.title); // Запускаем игру
+        };
+    }
+
+    if (backCatalogButton) {
+        backCatalogButton.onclick = () => {
+            gamePageArea.classList.add('hidden');
+            // Проверяем, откуда была вызвана страница игры
+            if (mainContent.classList.contains('hidden') && !searchResultsArea.classList.contains('hidden')) {
+                searchResultsArea.classList.remove('hidden'); // Возвращаемся к каталогу
+            } else {
+                mainContent.classList.remove('hidden'); // Возвращаемся на главную
+            }
+            window.scrollTo(0, 0); // Прокрутка вверх
+        };
+    }
+
+    // Добавляем обработчик для кнопки избранного
+    if (favoriteButton) {
+        favoriteButton.onclick = () => {
+            const gameId = favoriteButton.dataset.gameId;
+            
+            if (favoritesManager.isInFavorites(gameId)) {
+                // Если игра уже в избранном, удаляем её
+                if (favoritesManager.removeFromFavorites(gameId)) {
+                    favoriteButton.classList.remove('remove-favorite');
+                    favoriteButton.classList.add('add-favorite');
+                    favoriteButton.textContent = '☆';
+                }
+            } else {
+                // Если игра не в избранном, добавляем её
+                if (favoritesManager.addToFavorites(fullGameData)) {
+                    favoriteButton.classList.remove('add-favorite');
+                    favoriteButton.classList.add('remove-favorite');
+                    favoriteButton.textContent = '★';
+                }
+            }
+        };
+    }
+
+    // Создаем переменную, которая будет ссылаться на alphaListOverlay, чтобы избежать ошибок доступа
+    const alphaListOverlayElement = document.getElementById('alpha-list-overlay');
+
+    // Скрываем другие секции и показываем страницу игры
+    mainContent.classList.add('hidden');
+    searchResultsArea.classList.add('hidden');
+    display.classList.add('hidden');
+    
+    // Проверяем наличие элемента перед попыткой доступа
+    if (alphaListOverlayElement) {
+        alphaListOverlayElement.classList.add('hidden');
+    }
+    
+    document.body.style.overflow = '';
+    gamePageArea.classList.remove('hidden');
+    window.scrollTo(0, 0); // Прокрутка вверх
+}
+
+            // ИСПРАВЛЯЕМ ФУНКЦИЮ showMainContent
+            function showMainContent() {
+                searchResultsArea.classList.add('hidden');
+                document.getElementById('game-page-area').classList.add('hidden');
+                
+                // Проверяем наличие элемента перед попыткой доступа
+                const alphaListOverlayElement = document.getElementById('alpha-list-overlay');
+                if (alphaListOverlayElement) {
+                    alphaListOverlayElement.classList.add('hidden');
+                }
+                
+                document.body.style.overflow = ''; // Возвращаем скролл
+                display.classList.add('hidden'); // Скрываем эмулятор на всякий случай
+                backButton.style.display = 'none'; // Скрываем кнопку Назад эмулятора
+                reloadEmulatorButton.style.display = 'none'; // Скрываем кнопку Перезагрузки эмулятора
+                mainContent.classList.remove('hidden');
+                searchInput.value = '';
+            }
+
+            // Функция выполнения поиска
+            function performSearch() {
+                const searchTerm = searchInput.value.toLowerCase().trim(); 
+                if (!searchTerm) return;
+                
+                const filteredGames = libraryGames.filter(game => 
+                    game.title.toLowerCase().includes(searchTerm)
+                ); // Поиск только по хитам
+                
+                searchResultsArea.innerHTML = '';
+                const titleElement = document.createElement('h2'); 
+                titleElement.className = 'search-results-title'; 
+                titleElement.textContent = `Результаты поиска: "${searchInput.value}"`;
+                searchResultsArea.appendChild(titleElement);
+                
+                const backToMainButton = document.createElement('button'); 
+                backToMainButton.className = 'back-to-main-button'; 
+                backToMainButton.textContent = '‹ Назад'; 
+                backToMainButton.onclick = showMainContent; 
+                searchResultsArea.appendChild(backToMainButton);
+                
+                const resultsGrid = document.createElement('div'); 
+                resultsGrid.className = 'retro-games-grid'; 
+                searchResultsArea.appendChild(resultsGrid);
+                
+                renderGamesGrid(filteredGames, resultsGrid); // Отображение результатов поиска как хитов
+                mainContent.classList.add('hidden'); 
+                searchResultsArea.classList.remove('hidden'); 
+                window.scrollTo(0, 0);
+            }
+
+            // Функция отображения недавних игр
+            function showRecentGames() {
+                 try {
+                    const recentGames = JSON.parse(localStorage.getItem('recentGamesList') || '[]');
+                    searchResultsArea.innerHTML = '';
+                    const titleElement = document.createElement('h2'); 
+                    titleElement.className = 'search-results-title'; 
+                    titleElement.textContent = 'Недавние игры'; 
+                    searchResultsArea.appendChild(titleElement);
+                    
+                    const backToMainButton = document.createElement('button'); 
+                    backToMainButton.className = 'back-to-main-button'; 
+                    backToMainButton.textContent = '‹ Назад'; 
+                    backToMainButton.onclick = showMainContent; 
+                    searchResultsArea.appendChild(backToMainButton);
+                    
+                    const resultsGrid = document.createElement('div'); 
+                    resultsGrid.className = 'retro-games-grid'; 
+                    searchResultsArea.appendChild(resultsGrid);
+                    
+                    renderGamesGrid(recentGames, resultsGrid); // Используем рендер для Хитов для недавних
+                    mainContent.classList.add('hidden'); 
+                    searchResultsArea.classList.remove('hidden'); 
+                    window.scrollTo(0, 0);
+                } catch (e) { 
+                    console.error("Ошибка отображения недавних игр:", e); 
+                    alert("Не удалось загрузить список недавних игр."); 
+                }
+            }
+// --- КАТАЛОГ ИГР ---
+            // Функция отображения каталога
+            function showCatalog(catalogData, catalogTitle) {
+                searchResultsArea.innerHTML = '';
+                const titleElement = document.createElement('h2'); 
+                titleElement.className = 'search-results-title'; 
+                titleElement.textContent = catalogTitle; 
+                searchResultsArea.appendChild(titleElement);
+                
+                const backToMainButton = document.createElement('button'); 
+                backToMainButton.className = 'back-to-main-button'; 
+                backToMainButton.textContent = '‹ Назад'; 
+                backToMainButton.onclick = showMainContent; 
+                searchResultsArea.appendChild(backToMainButton);
+                
+                const catalogGrid = document.createElement('div'); 
+                catalogGrid.className = 'retro-games-grid';
+                searchResultsArea.appendChild(catalogGrid);
+                
+                renderCatalogGrid(catalogData, catalogGrid); // Используем рендерер каталога
+                mainContent.classList.add('hidden'); 
+                searchResultsArea.classList.remove('hidden'); 
+                window.scrollTo(0, 0);
+            }
+
+            // Функция отображения популярных игр
+            function showPopularGames() {
+                searchResultsArea.innerHTML = '';
+                const titleElement = document.createElement('h2'); 
+                titleElement.className = 'search-results-title'; 
+                titleElement.textContent = 'Популярные игры'; 
+                searchResultsArea.appendChild(titleElement);
+                
+                const backToMainButton = document.createElement('button'); 
+                backToMainButton.className = 'back-to-main-button'; 
+                backToMainButton.textContent = '‹ Назад'; 
+                backToMainButton.onclick = showMainContent; 
+                searchResultsArea.appendChild(backToMainButton);
+                
+                const resultsGrid = document.createElement('div'); 
+                resultsGrid.className = 'retro-games-grid'; 
+                searchResultsArea.appendChild(resultsGrid);
+                
+                // Используем renderGamesGrid, т.к. popularGamesList содержит объекты с romUrl
+                renderGamesGrid(popularGamesList, resultsGrid);
+                mainContent.classList.add('hidden'); 
+                searchResultsArea.classList.remove('hidden'); 
+                window.scrollTo(0, 0);
+            }
+
+            // --- ТОП ИГР ---
+            function showTopGames() {
+                searchResultsArea.innerHTML = '';
+                const titleElement = document.createElement('h2'); 
+                titleElement.className = 'search-results-title'; 
+                titleElement.textContent = 'ТОП ИГР'; 
+                searchResultsArea.appendChild(titleElement);
+                
+                const backToMainButton = document.createElement('button'); 
+                backToMainButton.className = 'back-to-main-button'; 
+                backToMainButton.textContent = '‹ Назад'; 
+                backToMainButton.onclick = showMainContent; 
+                searchResultsArea.appendChild(backToMainButton);
+                
+                const resultsGrid = document.createElement('div'); 
+                resultsGrid.className = 'retro-games-grid'; 
+                searchResultsArea.appendChild(resultsGrid);
+                
+                // Используем renderGamesGrid, т.к. topGamesList содержит объекты с romUrl
+                renderGamesGrid(topGamesList, resultsGrid);
+                mainContent.classList.add('hidden'); 
+                searchResultsArea.classList.remove('hidden'); 
+                window.scrollTo(0, 0);
+            }
+
+
+// Функция отображения избранных игр
+function showFavorites() {
+    const favorites = favoritesManager.getFavorites();
+    
+    searchResultsArea.innerHTML = '';
+    const titleElement = document.createElement('h2');
+    titleElement.className = 'search-results-title';
+    titleElement.textContent = 'Избранные игры';
+    searchResultsArea.appendChild(titleElement);
+    
+    const backToMainButton = document.createElement('button');
+    backToMainButton.className = 'back-to-main-button';
+    backToMainButton.textContent = '‹ Назад';
+    backToMainButton.onclick = showMainContent;
+    searchResultsArea.appendChild(backToMainButton);
+    
+    const favoritesGrid = document.createElement('div');
+    favoritesGrid.className = 'retro-games-grid';
+    searchResultsArea.appendChild(favoritesGrid);
+    
+    // Если избранных игр нет, показываем соответствующее сообщение
+    if (!favorites || favorites.length === 0) {
+        const emptyMessage = document.createElement('p');
+        emptyMessage.style.color = '#aaa';
+        emptyMessage.style.gridColumn = '1 / -1';
+        emptyMessage.style.textAlign = 'center';
+        emptyMessage.style.marginTop = '20px';
+        emptyMessage.textContent = 'У вас пока нет избранных игр. Добавьте игры в избранное, нажав на звёздочку на странице игры.';
+        favoritesGrid.appendChild(emptyMessage);
+    } else {
+        // Иначе отображаем игры сеткой
+        favorites.forEach(game => {
+            const gameCard = document.createElement('div');
+            gameCard.className = 'retro-game-card';
+            
+            // Определяем путь к изображению
+            let imagePath;
+            if (imageMap[game.id]) {
+                imagePath = imgBasePath + imageMap[game.id];
+            } else {
+                imagePath = `${catalogImgBasePath}${game.id}.webp`;
+            }
+            
+            // Создаем содержимое карточки с кнопкой для удаления из избранного
+            gameCard.innerHTML = `
+                <div class="favorite-button remove-favorite" data-game-id="${game.id}">★</div>
+                <img src="${imagePath}" alt="${game.title}" class="retro-game-image" onerror="this.onerror=null; this.src='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';">
+                <div class="retro-game-title">${game.title}</div>
+            `;
+            
+            // Обработчик клика по игре - запускаем игру
+            gameCard.addEventListener('click', (e) => {
+                // Игнорируем клик по кнопке избранного
+                if (e.target.classList.contains('favorite-button') || e.target.closest('.favorite-button')) {
+                    return;
+                }
+                loadGameFromUrl(game.romUrl, game.title);
+            });
+            
+            // Обработчик клика по кнопке удаления из избранного
+            const removeButton = gameCard.querySelector('.remove-favorite');
+            removeButton.addEventListener('click', (e) => {
+                e.stopPropagation(); // Предотвращаем запуск игры
+                const gameId = e.target.dataset.gameId;
+                if (favoritesManager.removeFromFavorites(gameId)) {
+                    // Обновляем отображение после удаления
+                    showFavorites();
+                }
+            });
+            
+            favoritesGrid.appendChild(gameCard);
+        });
+    }
+    
+    // Показываем результаты, скрыв основной контент
+    mainContent.classList.add('hidden');
+    searchResultsArea.classList.remove('hidden');
+    window.scrollTo(0, 0);
+}
+
+            // Загрузка игры по URL
+            function loadGameFromUrl(romUrl, gameName) { 
+                loadGame(romUrl, gameName, defaultCore); 
+            }
+
+            // Обработка DND, выбора файла
+            uploadBox.addEventListener('dragover', function(e) { 
+                e.preventDefault(); 
+                this.setAttribute("drag", true); 
+            }); 
+            
+            uploadBox.addEventListener('dragleave', function() { 
+                this.removeAttribute("drag"); 
+            }); 
+            
+            uploadBox.addEventListener('drop', function(e) { 
+                e.preventDefault(); 
+                this.removeAttribute("drag"); 
+                if (e.dataTransfer.files.length > 0) { 
+                    handleRomFile(e.dataTransfer.files[0]); 
+                } 
+            });
+            
+            fileInput.addEventListener('change', function() { 
+                if (this.files.length > 0) { 
+                    handleRomFile(this.files[0]); 
+                } 
+            });
+            
+            function handleRomFile(file) { 
+                const fileName = file.name; 
+                const parts = fileName.split("."); 
+                const extension = parts.pop().toLowerCase(); 
+                const gameName = parts.join("."); 
+                
+                if (["fds", "nes", "unif", "unf"].includes(extension)) { 
+                    loadGame(file, gameName, defaultCore); 
+                } else { 
+                    alert("Этот формат файла не поддерживается..."); 
+                } 
+            }
+
+            // Загрузка игры + сохранение недавних
+            function loadGame(romFile, gameName, core) {
+                 stopEmulator();
+                 // Сохранение в недавние
+                 let gameDataToStore = null;
+                 if (typeof romFile === 'string') { 
+                     gameDataToStore = libraryGames.find(g => g.romUrl === romFile) || fullCatalogGames.find(g => `roms/catalog/${g.filename}` === romFile); 
+                     if (!gameDataToStore && romFile.startsWith('roms/catalog/')) { 
+                         const filename = romFile.split('/').pop(); 
+                         gameDataToStore = fullCatalogGames.find(g => g.filename === filename); 
+                     } 
+                 }
+                 else if (romFile instanceof File) { 
+                     gameDataToStore = libraryGames.find(g => g.title === gameName) || fullCatalogGames.find(g => g.title === gameName); 
+                     if (!gameDataToStore) { 
+                         console.log("Загруженная игра не найдена, не добавляем в недавние."); 
+                     } 
+                 }
+                 
+                 if (gameDataToStore && gameDataToStore.id) {
+                     try {
+                         const MAX_RECENT_GAMES = 9; 
+                         let recentGames = JSON.parse(localStorage.getItem('recentGamesList') || '[]'); 
+                         recentGames = recentGames.filter(g => g.id !== gameDataToStore.id);
+                         
+                         let recentRomUrl = ''; 
+                         if (typeof romFile === 'string') { 
+                             recentRomUrl = romFile; 
+                         } else { 
+                             const libEntry = libraryGames.find(g => g.id === gameDataToStore.id); 
+                             const catEntry = fullCatalogGames.find(g => g.id === gameDataToStore.id); 
+                             if (libEntry) recentRomUrl = libEntry.romUrl; 
+                             else if (catEntry) recentRomUrl = `roms/catalog/${catEntry.filename}`; 
+                         }
+                         
+                         if (recentRomUrl) { 
+                             recentGames.unshift({ 
+                                 id: gameDataToStore.id, 
+                                 title: gameDataToStore.title, 
+                                 romUrl: recentRomUrl 
+                             }); 
+                             recentGames = recentGames.slice(0, MAX_RECENT_GAMES); 
+                             localStorage.setItem('recentGamesList', JSON.stringify(recentGames)); 
+                         }
+                     } catch (e) { 
+                         console.error("Ошибка сохранения недавних игр:", e); 
+                     }
+                 }
+                 
+                 // Продолжение загрузки игры
+                 window.currentRomUrl = romFile; 
+                 window.currentGameName = gameName; 
+                 window.orientationShown = false; 
+                 window.isEmulatorActive = true; 
+                 
+                 // Скрываем все остальные интерфейсы
+                mainContent.classList.add('hidden');
+                searchResultsArea.classList.add('hidden');
+                document.getElementById('game-page-area').classList.add('hidden');
+                const alphaListOverlayElement = document.getElementById('alpha-list-overlay');
+                if (alphaListOverlayElement) {
+                    alphaListOverlayElement.classList.add('hidden');
+                }
+                document.body.style.overflow = 'hidden'; // Запрещаем прокрутку под эмулятором
+
+                // Показываем эмулятор и кнопки управления им
+                display.classList.remove('hidden');
+                backButton.style.display = 'flex';
+                reloadEmulatorButton.style.display = 'flex'; 
+                 
+                 if (isMobile) { 
+                     enableFullscreen(); 
+                 }
+                 
+// Отключение кнопок сохранения/загрузки состояния
+window.EJS_Buttons = {
+    saveState: false,   // Отключает кнопку сохранения состояния
+    loadState: false,   // Отключает кнопку загрузки состояния
+    exportSave: false,  // Отключает кнопку экспорта сохранения
+    importSave: false   // Отключает кнопку импорта сохранения
+};
+
+
+                 window.EJS_player = "#game"; 
+                 window.EJS_gameName = gameName; 
+                 window.EJS_biosUrl = ""; 
+                 window.EJS_gameUrl = romFile; 
+                 window.EJS_core = 'nes'; 
+                 window.EJS_pathtodata = "data/"; 
+                 window.EJS_startOnLoaded = true; 
+                 window.EJS_DEBUG_XX = enableDebug; 
+                 window.EJS_disableDatabases = true; 
+                 window.EJS_threads = enableThreads;
+                 window.EJS_language = "ru-RU";
+                 // EJS_backgroundColor = '#c14744'//
+EJS_VirtualGamepadSettings = [
+    {
+        type: "button",
+        text: "Y",
+        id: "y",
+        location: "right",
+        left: 40,
+        bold: true,
+        input_value: 9
+    },
+    {
+        type: "button",
+        text: "X",
+        id: "X",
+        location: "right",
+        top: 40,
+        bold: true,
+        input_value: 1
+    },
+    {
+        type: "button",
+        text: "B",
+        id: "b",
+        location: "right",
+        left: 81,
+        top: 40,
+        bold: true,
+        input_value: 8
+    },
+    {
+        type: "button",
+        text: "A",
+        id: "a",
+        location: "right",
+        left: 40,
+        top: 80,
+        bold: true,
+        input_value: 0
+    },
+    {
+        type: "zone",
+        location: "left",
+        left: "50%",
+        top: "50%",
+        joystickInput: true,
+        color: "blue",
+        inputValues: [19, 18, 17, 16]
+    },
+    //Note- the dpad and the zone will overlap in this example, this is just to show what it should look like.
+    {
+        type: "dpad",
+        location: "left",
+        left: "50%",
+        right: "50%",
+        joystickInput: false,
+        inputValues: [4, 5, 6, 7]
+    },
+    {
+        type: "button",
+        text: "Start",
+        id: "start",
+        location: "center",
+        left: 60,
+        fontSize: 15,
+        block: true,
+        input_value: 3
+    },
+    {
+        type: "button",
+        text: "Select",
+        id: "select",
+        location: "center",
+        left: -5,
+        fontSize: 15,
+        block: true,
+        input_value: 2
+    }
+]
+
+EJS_Buttons = {
+    playPause: true,
+    restart: true,
+    mute: true,
+    settings: false,
+    fullscreen: true,
+    saveState: false,
+    loadState: false,
+    screenRecord: false,
+    gamepad: false,
+    cheat: false,
+    volume: true,
+    saveSavFiles: false,
+    loadSavFiles: false,
+    quickSave: false,
+    quickLoad: false,
+    screenshot: false,
+    cacheManager: false,
+    exitEmulation: false
+}
+
+
+                 
+window.EJS_settings = {
+  fastForward: false,
+  rewind: false,
+  saveState: false,
+  loadState: false,
+  deleteGame: false
+};
+                 window.EJS_onGameStart = function() { 
+                     if (window.Telegram && window.Telegram.WebApp) { 
+                         window.Telegram.WebApp.expand(); 
+                     } 
+                     setTimeout(fixCanvasScaling, 1000); 
+                 };
+                 
+                 const script = document.createElement("script"); 
+                 script.id = "emulatorScript"; 
+                 script.src = "data/loader.js"; 
+                 document.body.appendChild(script);
+            }
+
+            // Функции управления эмулятором, ориентацией, аудио и т.д.
+            backButton.addEventListener('click', function() {
+    stopEmulator();
+    display.classList.add('hidden');
+    mainContent.classList.remove('hidden');
+    searchResultsArea.classList.add('hidden');
+    backButton.style.display = 'none';
+    reloadEmulatorButton.style.display = 'none';
+    window.currentRomUrl = null;
+    window.currentGameName = null;
+    window.orientationShown = false;
+    window.isEmulatorActive = false;
+
+    // --- ДОБАВИТЬ ЭТУ СТРОКУ ---
+    document.body.classList.remove('fullscreen-mode');
+    console.log("Fullscreen mode disabled."); // Для отладки
+    // --- КОНЕЦ ДОБАВЛЕНИЯ ---
+})
+            
+            reloadEmulatorButton.addEventListener('click', function() { 
+                loadingState.style.display = 'flex'; 
+                setTimeout(() => { 
+                    reloadEmulator(); 
+                    setTimeout(() => { 
+                        loadingState.style.display = 'none'; 
+                    }, 1500); 
+                }, 500); 
+            });
+            
+            function checkOrientation() { 
+                /* Здесь должен быть код проверки ориентации */ 
+            } 
+            
+            function fixCanvasScaling() { 
+                /* Здесь должен быть код фиксации масштабирования canvas */ 
+            } 
+            
+          function enableFullscreen() {
+    document.body.classList.add('fullscreen-mode');
+    console.log("Fullscreen mode enabled."); // Для отладки
+} 
+            
+            function reloadEmulator() { 
+                /* Здесь должен быть код перезагрузки эмулятора */ 
+            } 
+            
+            function stopEmulator() { 
+                /* Здесь должен быть код остановки эмулятора */ 
+            } 
+            
+            function stopAllAudio() { 
+                /* Здесь должен быть код остановки всего аудио */ 
+            } 
+            
+            function initTelegramWebApp() { 
+                /* Здесь должен быть код инициализации Telegram Web App */ 
+            }
+
+            // Обработчики событий
+            window.addEventListener('orientationchange', () => setTimeout(checkOrientation, 300)); 
+            window.addEventListener('resize', () => { 
+                checkOrientation(); 
+                if (window.isEmulatorActive) { 
+                    setTimeout(fixCanvasScaling, 100); 
+                } 
+            }); 
+            
+            startPlayButton.addEventListener('click', (event) => { 
+                event.stopPropagation(); 
+                window.orientationShown = true; 
+                orientationMessage.style.display = 'none'; 
+            }); 
+            
+            orientationMessage.addEventListener('click', function() { 
+                window.orientationShown = true; 
+                this.style.display = 'none'; 
+            });
+            
+            searchButton.addEventListener('click', performSearch); 
+            searchInput.addEventListener('keydown', (event) => { 
+                if (event.key === 'Enter') { 
+                    event.preventDefault(); 
+                    performSearch(); 
+                } 
+            });
+            
+            if (recentGamesButton) { 
+                recentGamesButton.addEventListener('click', showRecentGames); 
+            }
+            
+// Обработчик для кнопки каталога игр в навигации
+if (catalogNavButton) {
+    catalogNavButton.addEventListener('click', () => {
+        showCatalog(fullCatalogGames, "Каталог игр");
+    });
+}
+
+
+            if (homeNavButton) { 
+                homeNavButton.addEventListener('click', showMainContent); 
+            }
+            
+            if (shareButton) { 
+                shareButton.addEventListener('click', () => { 
+                    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) { 
+                        const botUrl = "https://t.me/YourBotUsername"; /* !!! ЗАМЕНИ !!! */ 
+                        const shareText = encodeURIComponent("Зацени крутой эмулятор Денди прямо в Телеграм!"); 
+                        const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(botUrl)}&text=${shareText}`; 
+                        window.Telegram.WebApp.openLink(shareUrl); 
+                    } else { 
+                        alert("Функция 'Поделиться' работает только внутри Telegram."); 
+                    } 
+                }); 
+            }
+            
+            if (catalogButton) { 
+                catalogButton.addEventListener('click', () => { 
+                    showCatalog(fullCatalogGames, "Каталог игр"); 
+                }); 
+            }
+         
+// Находим кнопку избранного в навигации
+const favoritesNavButton = document.querySelector('.navigation .nav-button[title="Избранное"]');
+
+// Добавляем обработчик клика
+if (favoritesNavButton) {
+    favoritesNavButton.addEventListener('click', showFavorites);
+}
+   
+            if (alphaSortButton) { 
+                alphaSortButton.addEventListener('click', () => { 
+                    const sortedCatalog = [...fullCatalogGames].sort((a, b) => 
+                        a.title.localeCompare(b.title, 'ru')
+                    ); 
+                    showCatalog(sortedCatalog, "Каталог игр (по алфавиту)"); 
+                }); 
+            }
+            
+            if (popularButton) { 
+                popularButton.addEventListener('click', showPopularGames); 
+            }
+            
+            // --- СЛУЧАЙНАЯ ИГРА ---
+            if (randomButton) {
+                randomButton.addEventListener('click', () => {
+                    if (fullCatalogGames && fullCatalogGames.length > 0) {
+                        const randomIndex = Math.floor(Math.random() * fullCatalogGames.length);
+                        const randomGame = fullCatalogGames[randomIndex];
+                        const romPath = `roms/catalog/${randomGame.filename}`;
+                        loadGameFromUrl(romPath, randomGame.title); // Запускаем игру
+                    } else {
+                        alert("Каталог игр пуст!");
+                    }
+                });
+            }
+            
+            // --- ТОП ИГР ---
+            if (topGamesButton) {
+                topGamesButton.addEventListener('click', showTopGames);
+            }
+
+// --- Алфавитный список (Новое) ---
+            // Убедимся, что все нужные элементы найдены
+            if (alphaSortButton && alphaListOverlay && alphaListContent && alphaListCloseBtn && window.fullCatalogGames) {
+
+                // Обработчик клика по кнопке "ПО АЛФАВИТУ"
+                alphaSortButton.addEventListener('click', () => {
+                    // 1. Сортировка полного каталога игр по названию
+                    const sortedCatalog = [...window.fullCatalogGames].sort((a, b) =>
+                        // Используем localeCompare для правильной сортировки русских букв
+                        a.title.localeCompare(b.title, 'ru', { sensitivity: 'base' })
+                    );
+
+                    // 2. Очистка содержимого списка перед заполнением
+                    alphaListContent.innerHTML = '';
+
+                    // 3. Генерация HTML-элементов для каждой игры в списке
+                    sortedCatalog.forEach(game => {
+                        // Проверка на наличие необходимых данных у игры
+                        if (!game || !game.id || !game.title || !game.filename) {
+                             console.warn("Пропуск игры (алфавитный список) с неполными данными:", game);
+                             return; // Пропускаем эту игру
+                        }
+
+                        // Создаем элемент кнопки для списка
+const listItem = document.createElement('button');
+listItem.className = 'alpha-list-item';
+listItem.dataset.gameId = game.id;
+
+// Проверяем, находится ли игра в избранном
+const isInFavorites = favoritesManager.isInFavorites(game.id);
+
+// Формируем содержимое кнопки, добавляя звездочку для избранных игр
+if (isInFavorites) {
+    listItem.innerHTML = `<span class="favorite-indicator">★</span>${game.title}`;
+} else {
+    listItem.textContent = game.title;
+}
+
+                        // Добавляем обработчик клика на элемент списка
+                        listItem.addEventListener('click', () => {
+    // Находим полный объект игры по сохраненному ID
+    const selectedGame = window.fullCatalogGames.find(g => g.id === listItem.dataset.gameId);
+    if (selectedGame) {
+        // Формируем путь к ROM-файлу и запускаем игру напрямую
+        const romPath = `roms/catalog/${selectedGame.filename}`;
+        loadGameFromUrl(romPath, selectedGame.title); // Запускаем игру
+        // ...остальной код
+                                alphaListOverlay.classList.add('hidden'); // Скрываем оверлей со списком
+                                document.body.style.overflow = ''; // Восстанавливаем прокрутку основного контента
+                            } else {
+                                // Если игра не найдена (маловероятно, но возможно)
+                                console.error("Не удалось найти данные для игры с ID:", listItem.dataset.gameId);
+                                alert("Ошибка: Не удалось загрузить детали игры.");
+                            }
+                        });
+
+                        // Добавляем созданный элемент в контейнер списка
+                        alphaListContent.appendChild(listItem);
+                    });
+
+                    // 4. Показ оверлея
+                    alphaListOverlay.classList.remove('hidden'); // Убираем класс, чтобы показать окно
+                    document.body.style.overflow = 'hidden'; // Запрещаем прокрутку body под оверлеем
+
+                    // 5. Скрываем другие основные области для чистоты интерфейса
+                    mainContent.classList.add('hidden');
+                    searchResultsArea.classList.add('hidden');
+                    display.classList.add('hidden'); // Скрыть эмулятор, если он был виден
+                    document.getElementById('game-page-area').classList.add('hidden'); // Скрыть страницу игры, если она была видна
+                });
+
+                // Обработчик клика по кнопке "Закрыть" (крестик)
+                alphaListCloseBtn.addEventListener('click', () => {
+                    alphaListOverlay.classList.add('hidden'); // Скрываем оверлей
+                    document.body.style.overflow = ''; // Восстанавливаем прокрутку
+                    // Возвращаемся на главный экран для простоты
+                    showMainContent();
+                });
+
+                 // Обработчик клика на фон оверлея для закрытия (опционально)
+                 alphaListOverlay.addEventListener('click', (event) => {
+                     // Закрываем только если клик был непосредственно по фону, а не по его содержимому
+                     if (event.target === alphaListOverlay) {
+                         alphaListOverlay.classList.add('hidden');
+                         document.body.style.overflow = '';
+                         showMainContent(); // Возвращаемся на главный экран
+                     }
+                 });
+
+            } else {
+                // Сообщение об ошибке, если какие-то элементы не были найдены при загрузке страницы
+                console.error("Не удалось инициализировать алфавитный список: один или несколько элементов DOM не найдены или каталог игр пуст.");
+                if (alphaSortButton) {
+                     // Можно отключить кнопку, если функционал недоступен
+                     alphaSortButton.disabled = true;
+                     alphaSortButton.style.opacity = '0.5';
+                     alphaSortButton.style.cursor = 'not-allowed';
+                }
+            }
+            // --- Конец Алфавитного списка ---
+
+            // Инициализация
+            renderGamesGrid(libraryGames, initialRetroGamesGrid); 
+            initTelegramWebApp();
+            
+            // Обработчики для featured-card (кроме каталога)
+            document.querySelectorAll('.featured-card:not(#catalog-btn)').forEach(card => { 
+                card.addEventListener('click', function() { 
+                    const title = this.querySelector('.featured-title').textContent; 
+                    if (title === "ПРОДОЛЖИТЬ ИГРУ") { 
+                        alert("Функция 'Продолжить игру' в разработке!"); 
+                    } 
+                }); 
+            });
+            
+            // Наблюдатель за DOM
+            const observer = new MutationObserver((m) => { 
+                m.forEach((mu) => { 
+                    if (mu.addedNodes && mu.addedNodes.length > 0) { 
+                        for (let i = 0; i < mu.addedNodes.length; i++) { 
+                            const n = mu.addedNodes[i]; 
+                            if (n.nodeName === 'CANVAS' || (n.classList && n.classList.contains('ejs_canvas'))) { 
+                                setTimeout(fixCanvasScaling, 50); 
+                                break; 
+                            } 
+                        } 
+                    } 
+                }); 
+            }); 
+            observer.observe(document.getElementById('game'), {childList: true, subtree: true});
+        });
+    </script>
+
+</body>
+</html>
